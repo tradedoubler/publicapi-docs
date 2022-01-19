@@ -1,0 +1,3042 @@
+FORMAT: 1A
+HOST: https://connect.tradedoubler.com/
+
+# Tradedoubler Agency Advertiser Management API
+
+Tradedoubler is an Affiliate Marketing Network, connecting various advertising brands with our network of publishing websites. Tradedoubler's platform manages this relationship between advertisers and publishers. 
+This documentation relates to the Agency Advertiser API, which allows Agency users to manage their brands or advertisers on Tradedoubler's platform. 
+This is supporting documentation to [Tradedoubler Agency API Docs](https://tradedoubleragency.docs.apiary.io).
+
+Changelog
+=========
+2020-12-15
+----------
+Endpoints changed in this release:
++ GET /dashboard
+
+### Dashboard
+We have added metrics for Unique Visitors, impression Leads and Impression Sales as well daily breakdown and commission for Impression Leads and Sales.
+
+Authentication
+==============
+#### To manage advertisers belonging to your agency user, you will need to obtain a Bearer token by impersonating the advertiser before you can use the endpoints in this documentation. See [Agency Impersonation docs](https://tradedoubleragency.docs.apiary.io/#reference/organizations/impersonation) for how to view your advertisers and using impersonation to retrieve a valid Bearer token.
+<br><br>
+Authentication against the API is handled by [oAuth 2.0](https://oauth.net/2/) using bearer tokens. Once you have authentication using the oauth endpoint, all requests require a bearer token sent via the `Authorization` header as per the following format:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs
+```
+
+
+Response Formats
+================
+The reponse format for all API requests is JSON. All requests should therefore contain the following header:
+```
+Content-Type: application/json
+```
+
+Paging
+======
+To handle large results and to optimise performance of our API we use paginatation on a number of our endpoints to reduce the size of results returned to the client. All endpoints supporting pagination will return 2 attributes:
+- offset
+- limit
+
+To page through the results you need to supply two fields within the body of your GET request:
+
+|Paramater|Description|Details|
+|:--------|-----------|-------|
+offset|Offset the results by a specified amount|Integer, default is 0|
+limit|Limit the number of results to be returned|Integer, default is 20, maxmium limit is 100 unless specified
+
+For example: 
+- If the limit is default at 20 and an endpoint produces 100 results, only the first 20 will be returned (results 0 to 19). 
+- In order to retrieve the remaining results, use the offset parameter. In this example, adding offset=20 to the query string parameters.
+- Results begin at offset 0. If you're retrieving a report with limit=20, page 2 will begin at offset=20, page 3 at offset=40, page 4 at offset=60, etc.
+
+Roles
+=====
+Advertiser users can be given one of four roles. This determines which endpoints they can access.
+
+User Management
+---------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users|&#10004;|||
+POST|/users|&#10004;|||
+GET|/users/{logonAccountId}|&#10004;|||
+PUT|/users/{logonAccountId}|&#10004;|||
+DELETE|/users/{logonAccountId}|&#10004;|||
+
+Account Management
+------------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/account|&#10004;|&#10004;||
+GET|/ads|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/ads|&#10004;|&#10004;|&#10004;|
+POST|/ads|&#10004;|&#10004;|&#10004;|
+DELETE|/ads|&#10004;|&#10004;|&#10004;|
+GET|/programs|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/programs|&#10004;|&#10004;||
+DELETE|/programs|&#10004;|&#10004;||
+GET|/programs/{programId}|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/programs/{programId}|&#10004;|&#10004;|&#10004;|
+GET|/programs/{programId}/advanced|&#10004;|&#10004;||
+PUT|/programs/{programId}/advanced|&#10004;|&#10004;||
+GET|/programs/{programId}/commissions|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/programs/{programId}/commissions|&#10004;|&#10004;||
+GET|/programs/{programId}/segments|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/programs/{programId}/segments|&#10004;|&#10004;||
+POST|/programs/{programId}/segments|&#10004;|&#10004;||
+GET|/programs/{programId}/sources|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/programs/{programId}/sources|&#10004;|&#10004;||
+GET|/events|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/events|&#10004;|&#10004;||
+POST|/events|&#10004;|&#10004;||
+GET|/tokens|&#10004;|&#10004;|&#10004;|
+POST|/tokens|&#10004;|&#10004;||
+GET|/salesPending|&#10004;|&#10004;|&#10004;|
+PUT|/salesPending|&#10004;|&#10004;|&#10004;|
+GET|/invoices|&#10004;|&#10004;||
+GET|/invoices/{invoiceId}/pdf|&#10004;|&#10004;||
+GET|/sources|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/sources/categories|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/sources/categories|&#10004;|&#10004;|&#10004;|
+POST|/sources/categories|&#10004;|&#10004;|&#10004;|
+
+Reporting
+---------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/statistics|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/statistics/export|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions/export|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard/programs|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard/sources|&#10004;|&#10004;|&#10004;|&#10004; 
+   
+# Group Users
+Users have access to Advertiser Organization and have four roles available: Owner, Admin, Write, Read. An Advertiser Organization always has one user with the role owner. This service allows the creation and management of users for the Advertiser Organization.
+
+## My User [/usermanagement/users/me]
+A User is an individual logon account connected to an Advertiser organization. 
+
+### Get My User Details [GET]
+
+Get details related to current logged in user. This is available for any role.
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + logonAccountId: 1234567 (number) - Logon ID of the user 
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + organizationId: 1234567 (number)  - Organization ID of the Publisher the user belongs to
+        + owningOrganizationId: 0 (number) - When Publisher is in a private network, the ID of the private network organization
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+        + typeId: 2 (number) - User type, if a publisher or advertiser. Advertiser typeId is always 2
+        + personId: 123456 (number) - Person ID of the user
+
+ + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Body
+
+            {
+                "logonAccountId": 12345,
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 2,
+                "organizationId": 1234567,
+                "owningOrganizationId": 0,
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y",
+                "typeId": 2,
+                "personId": 123456
+            } 
+
+### Update My User Information [PUT]
+
+Update details related to current logged in user. This is available for any role.
+
++ Request (application/json)
+
+    + Attributes (object)
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+    
+    + Body
+
+            {
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "languageId": "en"
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "logonAccountId": 12345,
+            "username": "testuser",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 2,
+            "personId": 123456
+        } 
+        
+
+## Users [/usermanagement/users]
+
+### List Users [GET]
+Provides a list of all users connected to the Advertiser Organization. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "logonAccountId": 2389158,
+                "username": "user1",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 1,
+                "personId": 123456
+            },
+            {
+                "logonAccountId": 23252,
+                "username": "user2",
+                "firstName": "Test",
+                "lastName": "User2",
+                "email": "test2@tradedoubler.com",
+                "roleId": 2,
+                "personId": 123457
+            }
+        ]
+
+### Create a User [POST]
+Create a new user for an Advertiser Organization.
+        
++ Request (application/json)
+
+    + Attributes (object)
+        + username: `user123` - username for login
+        + firstName: `A`
+        + lastName: `User`
+        + email: `user@tradedoubler.com` - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + password: `aUn1queP@ssword` - user's password
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+        
+    + Body
+    
+            {
+                "username": "test3",
+                "firstName": "Test",
+                "lastName": "User3",
+                "email": "test3@tradedoubler.com",
+                "roleId": 3,
+                "password": "aUn1queP@ssword",
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234568,
+            "username": "test3",
+            "firstName": "Test",
+            "lastName": "User3",
+            "email": "test3@tradedoubler.com",
+            "roleId": 3,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 2,
+            "personId": 123456
+        }
+
+## User By Id [/usermanagement/users/{logonAccountId}]
+
+### Get a specific User [GET]
+Provides information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Attributes (object)
+        + logonAccountId: 1234567 (number) - Logon ID of the user 
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + organizationId: 1234567 (number)  - Organization ID of the Publisher the user belongs to
+        + owningOrganizationId: 0 (number) - When Publisher is in a private network, the ID of the private network organization
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+        + typeId: 2 (number) - User type, if a publisher or advertiser. Advertiser typeId is always 2
+        + personId: 123456 (number) - Person ID of the user
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234567,
+            "username": "test",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 1,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en"
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 2,
+            "personId": 123456
+        }  
+
+### Update a User [PUT]
+Update information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Attributes (object)
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Body
+
+            {
+                "username": "test_change",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test3@tradedoubler.com",
+                "roleId": 2,
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234567,
+            "username": "test_change",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 2,
+            "personId": 123456
+        }
+
+### Delete a User [DELETE]
+Delete a user a specific user based on their logonAcccountId, this will remove their access to login or access any Publisher Organization information. This is only available for the user with the role Owner.
+
++ Response 200 (application/json)
+    
+        {
+            "response": "User successfully deleted"
+        }
+
+## Password [/usermanagement/users/me/password]
+
+### Change Password [PUT]
+Change the password of logged in user
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]   
+            
+    + Body
+            
+            {
+                "currentPassword": "0!dP@ssword",
+                "newPassword": "N3wP@ssword"
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "response": "Password successfully changed"
+        }
+
+# Group Account
+## Manage Advertiser Account [/advertiser/account]
+
+### Account [GET]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+    + Attributes (object)
+        + organizationId: 123456 (number) - Id of the advertiser account organization
+        + websiteUrl: `https://www.tradedoubler.com` (string) - Default URL for the advertiser
+        + name: Tradedoubler (string) - Name of the advertiser account organization
+        + orgTypeId: 1 (number) - Advertiser account organization type. 1 = Individual/sole trader, 2 = registered company, 3 = non-taxable organization i.e. charity
+        + creditWorthy: true (boolean) - If the advertiser has passed a credit check
+        + tdOrganizationId: 1234567 (number) - The owning Tradedoubler organization, used by Tradedoubler to determine which TD market to invoice from
+        + registrationNumber: 12345678 (string) - If the advertiser account is a registered country, the registration number
+        + vatNumber: SE12345678 (string) - If the adveritser account is VAT registered, the VAT number
+        + organizationStatusId: 1 (number) - Advertiser account organization active status. 1= Active, 2= Inactive
+        + primaryContactPersion: (object) - Details related to the primary contact person for the advertiser account
+            + personId: 123456 (number) - Person ID for the primary contact person
+            + logonAccountId: 654321 (number) - Logon Account Id for the primary contact person
+            + username: auser (string) - Username of the primary contact person
+            + email: auser@advertiser.com (string) - Email address of the primary contact person 
+            + firstName: A (string) - Firstname of the primary contact person
+            + LastName: User (string) - Lastname of the primary contact person
+            + languageCode: en (string) - ISO-639-1 language Id for the primary contact person
+            + telephone: 0800 000000 (string) - Contact number for the primary contact person
+        + primaryAddress: (object) - 
+            + street: Streetname 1 (string) - Address street line 1
+            + street2: Address line 2 (string) - Address street line 2
+            + postCode: 111 11 (string) - Address postal/zip code
+            + city: Stockholm (string) - Address city
+            + county: Stockholm Area (string) - Address county
+            + countryCode: SE (string) - Address country code ISO-3166-1
+
+    + Body
+    
+            {
+                "organizationId": 123456,
+                "websiteUrl": "https://www.tradedoubler.com",
+                "name": "Tradedoubler",
+                "orgTypeId": 2,
+                "creditWorthy": true,
+                "tdOrganizationId": 51,
+                "registrationNumber": "039219",
+                "vatNumber": "SE999999999901",
+                "organizationStatusId": 2,
+                "primaryAddress": {
+                    "street": "Street1",
+                    "street2": "Street2",
+                    "postCode": "11111",
+                    "county": "Stockholm",
+                    "city": "Stockholm",
+                    "countryCode": "se"
+                },
+                "primaryContactPerson": {
+                    "personId": 123456,
+                    "logonAccountId": 654321,
+                    "username": "user@tradedoubler.com",
+                    "email": "user@tradedoubler.com",
+                    "firstName": "A",
+                    "lastName": "User",
+                    "languageCode": "en",
+                    "telephone": "0800 000 000"
+                }     
+            }           
+
+# Group Ads
+
+## List All Ads in a program [/advertiser/ads]
+ 
+### Ads [GET]
+You can view a list of available ads on a specific program
++ Parameters
+    + programId: 123456 (long) - Filter available ads for specific programs
+    + adType: 1 (enum(integer), optional) - Filter available ads based on the type
+        + Members
+            + `1` - Text
+            + `4` - Image
+            + `6` - HTML
+    + adSize: 300x250 (string, optional) - Filter available ads based on the Size. This is a free text search, to search for width use "300x" and for height only "x250"
+    + adName: DefaultAd (string, optional) - Filter available ads based on the Name
+    + adId: 12345678 (long, optional) - Filter for a specific ad
+    + includeExpired: true (boolean, optional) - Where to include expired ads (default value: false)
+    + sortBy: lastUpdated (string, optional)
+        + Members
+            + `lastUpdated`
+            + `createdDate`
+            + `adName`
+            + `adType`
+            + `adSize`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + programId: 123456 (number) - Id of the program
+        + programName: A Program - Name of the program
+        + adId: 12345678 (number) - Id of the Ad
+        + adName: DefaultAd - Name of the ad
+        + adSize: 300x250 - Size of the Ad
+        + programCategories: [1,2,4] (array) - Array of program category Ids
+        + lastUpdate: 2020-01-17T23:00:00.000+0200 (date) - Date and time the ad was last updated
+        + createdDate: 2020-01-01T12:00:00.000+0200 (date) - Date and time the ad was created
+        + adType: 4 (number) - Type of ad.  1 = text, 4 = image, 6 = html
+        + url: http://test.tradedoubler.com/file/30539/18.01.17_logo/selection-100x100.jpg - url where the ad is hosted if an image
+        + productUrl: http://www.tradedoubler.com - url the ad redirects to, applies to image and text ads
+        + customHtml: <html>...</html> - html code for HTML ads
+        + text: This is an ad - Text for text ads
+        + segments: [{"id":"1","name":"general"}] (array) - array of all segments with access to the ad
+
+    + Body
+    
+            [
+                {
+                   "total": 2,
+                   "offset": 0,
+                   "limit": 20,
+                   "items": [
+                      {
+                          "programId": 318210,
+                          "programName": "Test GB",
+                          "adId": 23709816,
+                          "adName": "Logo_Test_selection",
+                          "adSize": "100x100",
+                          "programCategories": [9, 11, 12],
+                          "lastUpdate": "2017-01-18T15:49:27.000+0000",
+                          "createdDate": "2017-01-17T23:00:00.000+0000",
+                          "adType": 4,
+                          "url": "http://test.tradedoubler.com/file/30539/18.01.17_logo/selection-100x100.jpg",
+                          "productUrl": null,
+                          "customHtml": " ",
+                          "text": null
+                      },
+                      {
+                          "programId": 318210,
+                          "programName": "Test GB",
+                          "adId": 24312236,
+                          "adName": "advance saver offer_468x60",
+                          "adSize": "468x60",
+                          "programCategories": [9, 11, 12],
+                          "lastUpdate": "2018-06-13T06:48:45.000+0000",
+                          "createdDate": "2018-06-12T22:00:00.000+0000",
+                          "adType": 1,
+                          "url": "http://",
+                          "productUrl": "https://www.test.com/gb/promotions-offers/early-booking-offers/ALL-ALL",
+                          "customHtml": " ",
+                          "text": "landing page generic "
+                      }
+                   ]
+                }
+            ]
+
+### Create AD [POST]
+You can create a text, image or HTML ad programmatically through the API
++ Request (application/json)
+
+        {
+         "name": "test ad1",
+         "programId": 123456,
+         "startDate": "20190101",
+         "endDate": "20191231",
+         "adType": 4,
+         "imageUrl": "https://www.tradedoubler.com/image.jpg",
+         "productUrl": "https://www.tradedoubler.com",
+         "adSize": "120x120",
+         "segmentId":["3"]
+        }
+
++ Response 200 (application/json)
+
+        {
+          "adId": 12345678,
+          "adName": "test ad1",
+          "programId": 123456,
+          "programName": "A Test Program",
+          "startDate": "2019-01-01T00:00:00.000+0200",
+          "endDate": "2019-12-31T23:59:59.000+0200",
+          "lastUpdate": "2019-01-01T09:00:09.000+0200",
+          "deleted": "N",
+          "adType": 4,
+          "adTypeName": "Image",
+          "imageUrl": "https://www.tradedoubler.com/image.jpg",
+          "productUrl": "https://www.tradedoubler.com",
+          "adSize": "120x120",
+          "segments": [
+            "id": "1",
+            "name":"General"
+          ]
+          
+        }
+
+## List an Ad by ID [/advertiser/ads/{adId}]
+
+### Ad [GET]
+You can view more details on a specific ad. This is also useful if you want to update an existing ad.
++ Parameters
+    + adId: 12345678 (path)
+    
++ Response 200 (application/json)
+
+        {
+          "programId": 318210,
+          "programName": "Test GB",
+          "adId": 23709816,
+          "adName": "Logo_Test_selection",
+          "adSize": "100x100",
+          "lastUpdate": "2017-01-18T15:49:27.000+0000",
+          "deleted": "N",
+          "adType": 4,
+          "adTypeName": "Image",
+          "imageUrl": "https://www.tradedoubler.com/image.jpg",
+          "productUrl": "https://www.tradedoubler.com",
+          "segments": [
+            "id": "1",
+            "name":"General"
+          ]
+        }
+
+
+### Update Ad [PUT]
+Update an existing ad
++ Parameters
+    + adId: 12345678 (path)
+    
++ Request (application/json)
+
+        {
+            "name": "test ad1",
+            "startDate": "20190101",
+            "endDate": "20191231",
+            "adType": 4,
+            "imageUrl": "https://www.tradedoubler.com/image.jpg",
+            "productUrl": "https://www.tradedoubler.com",
+            "size": "120x120",
+            "segmentId": ["1"]
+        }
+
++ Response 200 (application/json)
+
+        {
+          "adId": 12345678,
+          "adName": "test ad1",
+          "programId": 123456,
+          "programName": "A Test Program",
+          "startDate": "2019-01-01T00:00:00.000+0200",
+          "endDate": "2019-12-31T23:59:59.000+0200",
+          "lastUpdate": "2019-01-01T09:00:09.000+0200",
+          "deleted": "N",
+          "adType": "4",
+          "adTypeName": "Image",
+          "productUrl": "https://www.tradedoubler.com",
+          "imageUrl": "https://www.tradedoubler.com",
+          "adSize": "120x120",
+          "segments": [
+            "id": "1",
+            "name":"General"
+          ]
+        }
+
+# Group Programs
+
+## Program Management [/advertiser/programs]
+
+### List Programs [GET]
+You can view a list of available programs for your organization
++ Parameters
+    + active: true (bool, optional) - Filter by the active status of program
+    + paused: true (bool, optional) - Filter by the paused status of the program
+    + countryCode: `SE` (string, optional) - Filter programs on a specific country - ISO-639-1
+    + name: `A Program` (string, optional) - Filter on the name of the program.
+    + categoryIds: 11,13,16 (string, optional) - Filter based on program categories
+        + Members
+            + `1: Gaming`
+            + `2: Finance`
+            + `3: Educations & Careers`
+            + `4: Insurance`
+            + `5: Health & Beauty`
+            + `6: Social & Dating`
+            + `7: Fashion`
+            + `8: Telecoms & Utilities`
+            + `9: Sports & Recreation`
+            + `10: Computers & Electronics`
+            + `11: Travel`
+            + `12: Business To Business`
+            + `13: Media & Entertainment`
+            + `14: Home & Garden`
+            + `15: Non Profit Organizations`
+            + `16: Shopping & Retail`
+            + `17: Food & Drink`
+            + `18: Alcohol & Tobacco`
+            + `19: Automotive`
+    + sortBy: id (string, optional)
+        + Members
+            + `id`
+            + `name`            
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + id: 123456 - unique Id for the program
+        + countryCode: GB - country code of the program
+        + closedProgram: true - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + active: true - if the program is currently active
+        + paused: false - if the program is in a paused state then no statistics will show until it is unpaused. Contact your Tradedoubler Account Manager to request a program is no longer paused.
+        + createdDate: 2009-08-21 - the date the program was created
+        + startDate: 2009-08-21 - the date the programw went live
+        + name: ATestProgram - the name of the program
+        + logoUrl: https://www.logo.com - the url for the program's logo
+        + prepayment: false - if the program is prepayment then the advertiser is invoiced in advance, this allows publishers to be paid much quicker. Otherwise advertisers are invoiced on a monthly basis.
+        + deepLinking: true - if the program allows publishers to deeplink to product pages
+        + categoryIds: [1,2] - The Ids of categories the program has been mapped to. See parameters for more information
+        + keywordPolicyId: 0 - The keyword policy rule for the program. 0=no keyword policy, 1 = Open policy, 2 = Restricted, 3 = Closed.
+        + implementationTypeId: 3 - The type of tracking setup for the program. 1 = Click tracking program only, 2 = on-site conversion tracking, 3rd party setup, 3 = on-site conversion tracking, 1st party setup, 4 offline tracking, 3rd party setup, 5 = offline conversion tracking, 1st party setup, 6-Unknown.
+        + currencyCode: GBP - the currency the program is set to track in
+        + sourceStatus: (object) - object containing a summary of accepted affiliates and affiliates that have applied and require approval.
+
+    + body
+
+            {
+                "offset": 0,
+                "limit": 20,
+                "total": 1,
+                "items": [
+                    {
+                        "id": 123456,
+                        "countryCode": "GB",
+                        "closedProgram": true,
+                        "active": false,
+                        "paused": false,
+                        "createdDate": "2009-08-21",
+                        "startDate": "2009-08-21",
+                        "endDate": null,
+                        "name": "ATestProgram",
+                        "logoUrl": "https://www.logo.com",
+                        "prepayment": false,
+                        "deepLinking": true,
+                        "categoryIds": [
+                            2,
+                            3
+                        ],
+                        "keywordPolicyId": 0,
+                        "implementationTypeId": 3,
+                        "currencyCode": "GBP",
+                        "sourceStatus": {
+                            "accepted": 0,
+                            "underConsideration": 0
+                        }
+                    }
+                ]
+            }
+
+### Create a Program [POST]
+You can create a new program through the API
+
++ Request (application/json)
+
+    + Attributes
+        + name: A Program (required, string) - the name of the program
+        + active: true (string) - if the program is currently active
+        + closedProgram: true (boolean) - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + currencyCode: GBP (required, string) - the currency the program is set to track in
+        + countryCode: GB (required, string) - country code of the program
+        + homePageUrl: https://www.tradedoubler.com (optional, string) - The default URL for the program
+        + logoUrl: https://www.logo.com (optional, string) - the url for the program's logo
+        + uniqueClickTime: 0.5 (optional, number, decimal) - the time in hours since the last click before a click is counted as unique
+        + cookieWindow: 30 (optional, number) - the time in days for sales to be allowed. The time in days between last click and sale.
+        + autoConnect: false (optional, boolean) - automatically connects affiliates that have the feature enabled
+        + impressionTracking: true (optional, boolean) - if impression tracking is enabled, if no click has been found
+        + voucherTracking: true (optional, boolean) - if TradedoublerTradedouber voucher is enabled
+        + mobileTracking: true (optional, boolean) - if the program has tracking on a mobile friendly site
+        + categories: (array) - the categories the program has been mapped to.
+            + Members
+                + 1 (number) - Gaming
+                + 2 (number) - Finance
+                + 3 (number) - Educations & Careers
+                + 4 (number) - Insurance
+                + 5 (number) - Health & Beauty
+                + 6 (number) - Social & Dating
+                + 7 (number) - Fashion
+                + 8 (number) - Telecoms & Utilities
+                + 9 (number) - Sports & Recreation
+                + 10 (number) - Computers & Electronics
+                + 11 (number) - Travel
+                + 12 (number) - Business To Business
+                + 13 (number) - Media & Entertainment
+                + 14 (number) - Home & Garden
+                + 15 (number) - Non Profit Organizations
+                + 16 (number) - Shopping & Retail  
+                + 17 (number) - Food & Drink
+                + 18 (number) - Alcohol & Tobacco
+                + 19 (number) - Automotive
+        + implementationTypeId: 3 (required, number) - the type of tracking setup for the program. 1 = Click tracking program only, 2 = on-site conversion tracking, 3rd party setup, 3 = on-site conversion tracking, 1st party setup, 4 offline tracking, 3rd party setup, 5 = offline conversion tracking, 1st party setup, 6-Unknown.
+        + startDate: 2009-08-21 (optional, string) - the date the program went live
+        + endDate: 2012-01-01 (optional, string) - if the program has ended, the date it ended.
+        + adminPersonId: 123456 (required, number) - The person id for the admin user, 
+        + techPersonId: 123456 (required, number) - The person id for the user responsible for technical queries, can be found in users
+        + genericPersonId: 123456 (required, number) - The person id for the user responsible for general queries, can be found in users
+        + invoiceTdOrgId: 2227258 (required, number) - Relates to the TD Market responsible for invoicing, supplied by your TD Account Manager
+        + tdOrganizationId: 2227258 (required, number) - Relates to the TD Owning Market, fixed for program type SMB otherwise supplied by your TD Account Manager
+        + smb: false (optional, boolean) - Whether the program is a Tradedoubler Grow program
+        + programTypeId: 1 (number) - Program Type Id, 1 = A program using Tradedoubler's public network
+        + deepLinking: true (optional, boolean) - if the program allows publishers to deeplink to product pages
+    
+    + Body
+
+        {
+            "name": "A Program",
+            "active": true,
+            "closedProgram": false,
+            "currencyCode": "GBP",
+            "countryCode": "GB",
+            "homePageUrl": "http://www.tradedoubler.com",
+            "logoUrl": "http://www.tradedoubler.com/image.jpg",
+            "uniqueClickTime": 0.5,
+            "cookieWindow": 30,
+            "autoApproveApplications": false,
+            "autoConnect": false,
+            "impressionTracking": true,
+            "voucherTracking": true,
+            "mobileTracking": true,
+            "categories": [1,2],
+            "startDate": "20200122",
+            "endDate": null,
+            "adminPersonId": 2245598,
+            "techPersonId": 2245598,
+            "genericPersonId":2245598,
+            "programTypeId": 1,
+            "smb": true,
+            "tdOrganizationId": 2227258,
+            "invoiceTdOrgId":2227258,
+            "deepLinking": true
+        }
+
++ Response 200 (application/json)
+
+    + body
+
+            {
+    
+                "id": 303053,
+                "name": "A Program",
+                "active": true,
+                "closedProgram": false,
+                "currencyCode": "GBP",
+                "countryCode": "GB",
+                "homePageUrl": "http://www.tradedoubler.com",
+                "logoUrl": "http://www.tradedoubler.com/image.jpg",
+                "uniqueClickTime": 0.50,
+                "cookieWindow": 30,
+                "autoConnect": false,
+                "impressionTracking": true,
+                "voucherTracking": true,
+                "mobileTracking": true,
+                "categories": [
+                 {
+                     "categoryId": 1,
+                     "categoryName": "Gaming"
+                 },
+                 {
+                     "categoryId": 2,
+                     "categoryName": "Finance"
+                 }
+                ],
+                "startDate": "2020-01-22T00:00:00.000+0100",
+                "endDate": null,
+                "persons": {
+                 "adminPersonId": 2245598,
+                 "adminPersonName": "A User",
+                 "techPersonId": 2245598,
+                 "techPersonName": "A User"
+                },
+                "programTypeId": 1,
+                "smb": true,
+                "deepLinking": true
+            }
+
+### Program Information [GET /advertiser/programs/{programId}]
+You can view a specific program from your organization
++ Parameters
+    + programId: 123456 (path)
+
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + id: 123456 (number)- unique Id for the program
+        + name: ATestProgram (string) - the name of the program
+        + active: true (string) - if the program is currently active
+        + closedProgram: true (string) - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + currencyCode: GBP (string) - the currency the program is set to track in
+        + countryCode: GB (string) - country code of the program
+        + homePageUrl: https://www.tradedoubler.com (string) - the home page of the program
+        + logoUrl: http://www.tradedoubler.com/logo.jpg (string) - the url for the program's logo
+        + uniqueClickTime: 0.5 (number, decimal) - the time in hours since the last click before a click is counted as unique
+        + cookieWindow: 30 (number) - the time in days for sales to be allowed. The time in days between last click and sale.
+        + autoConnect: false (string) - automatically connects affiliates that have the feature enabled
+        + impressionTracking: true (boolean) - if impression tracking is enabled, if no click has been found
+        + voucherTracking: true (boolean) - if TradedoublerTradedouber voucher is enabled
+        + mobileTracking: true (boolean) - if the program has tracking on a mobile friendly site
+        + categories: (object) - the categories the program has been mapped to.
+        + implementationTypeId: 3 (number) - the type of tracking setup for the program. 1 = Click tracking program only, 2 = on-site conversion tracking, 3rd party setup, 3 = on-site conversion tracking, 1st party setup, 4 offline tracking, 3rd party setup, 5 = offline conversion tracking, 1st party setup, 6-Unknown.
+        + startDate: 2009-08-21 (string) - the date the programw went live
+        + endDate: 2012-01-01 (string) - if the program has ended, the date it ended.
+        + persons: (object) - the relevant users for the program
+        + smb: false (boolean) - whether the program is a Tradedoubler Grow program
+        + deepLinking: true (boolean) - if the program allows publishers to deeplink to product pages
+
+    + body
+    
+            {
+                "id": 123456,
+                "name": "ATestProgram",
+                "active": true,
+                "closedProgram": true,
+                "currencyCode": "GBP",
+                "countryCode": "GB",
+                "homePageUrl": "https://www.tradedoubler.com",
+                "logoUrl": "http://www.tradedoubler.com/logo.jpg",
+                "uniqueClickTime": 0.5,
+                "cookieWindow": 30,
+                "autoConnect": false,
+                "impressionTracking": true,
+                "voucherTracking": true,
+                "mobileTracking": true,
+                "categories": [
+                    {
+                        "categoryId": 2,
+                        "categoryName": "Finance"
+                    }
+                ],
+                "startDate": "2020-08-21",
+                "endDate": null,
+                "persons": {
+                    "adminPersonId": 1410413,
+                    "adminPersonName": "A User",
+                    "techPersonId": 1410413,
+                    "techPersonName": "A User"
+                },
+                "programTypeId": 1,
+                "smb": false,
+                "deepLinking": true
+            }
+            
+### Update Program [PUT /advertiser/programs/{programId}]
+You can view a specific program from your organization
+
++ Parameters
+    + programId: 123456 (path)
+
++ Request (application/json)
+
+    + Attributes
+        + name: A Program (required, string) - the name of the program
+        + active: true (required, string) - if the program is currently active
+        + closedProgram: true (required, boolean) - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + homePageUrl: https://www.tradedoubler.com (required, string) - The default URL for the program
+        + logoUrl: https://www.logo.com (required, string) - the url for the program's logo
+        + uniqueClickTime: 0.5 (required, number, decimal) - the time in hours since the last click before a click is counted as unique
+        + cookieWindow: 30 (required, number) - the time in days for sales to be allowed. The time in days between last click and sale.
+        + autoConnect: false (required, boolean) - automatically connects affiliates that have the feature enabled
+        + impressionTracking: true (required, boolean) - if impression tracking is enabled, if no click has been found
+        + voucherTracking: true (required, boolean) - if TradedoublerTradedouber voucher is enabled
+        + mobileTracking: true (required, boolean) - if the program has tracking on a mobile friendly site
+        + categories: (array) - the categories the program has been mapped to.
+            + Members
+                + 1 (number) - Gaming
+                + 2 (number) - Finance
+                + 3 (number) - Educations & Careers
+                + 4 (number) - Insurance
+                + 5 (number) - Health & Beauty
+                + 6 (number) - Social & Dating
+                + 7 (number) - Fashion
+                + 8 (number) - Telecoms & Utilities
+                + 9 (number) - Sports & Recreation
+                + 10 (number) - Computers & Electronics
+                + 11 (number) - Travel
+                + 12 (number) - Business To Business
+                + 13 (number) - Media & Entertainment
+                + 14 (number) - Home & Garden
+                + 15 (number) - Non Profit Organizations
+                + 16 (number) - Shopping & Retail  
+                + 17 (number) - Food & Drink
+                + 18 (number) - Alcohol & Tobacco
+                + 19 (number) - Automotive
+        + startDate: 2009-08-21 (required, string) - the date the program went live
+        + endDate: 2012-01-01 (required, string) - if the program has ended, the date it ended.
+        + adminPersonId: 123456 (required, number) - The person id for the admin user, 
+        + techPersonId: 123456 (required, number) - The person id for the user responsible for technical queries, can be found in users
+        + genericPersonId: 123456 (optional, number) - The person id for the user responsible for general queries, can be found in users
+        + deepLinking: true (optional, boolean) - if the program allows publishers to deeplink to product pages
+    
+    + Body
+
+            {
+                "name": "A Program",
+                "active": true,
+                "closedProgram": false,
+                "currencyCode": "GBP",
+                "countryCode": "GB",
+                "homePageUrl": "http://www.tradedoubler.com",
+                "logoUrl": "http://www.tradedoubler.com/image.jpg",
+                "uniqueClickTime": 0.5,
+                "cookieWindow": 30,
+                "autoApproveApplications": false,
+                "autoConnect": false,
+                "impressionTracking": true,
+                "voucherTracking": true,
+                "mobileTracking": true,
+                "categories": [1,2],
+                "startDate": "20200122",
+                "endDate": null,
+                "adminPersonId": 2245598,
+                "techPersonId": 2245598,
+                "genericPersonId":2245598,
+                "programTypeId": 1,
+                "smb": true,
+                "tdOrganizationId": 2227258,
+                "invoiceTdOrgId":2227258,
+                "deepLinking": true
+            }
+        
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + id: 123456 (number)- unique Id for the program
+        + name: ATestProgram (string) - the name of the program
+        + active: true (string) - if the program is currently active
+        + closedProgram: true (string) - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + currencyCode: GBP (string) - the currency the program is set to track in
+        + countryCode: GB (string) - country code of the program
+        + homePageUrl: https://www.tradedoubler.com (string) - the home page of the program
+        + logoUrl: http://www.tradedoubler.com/logo.jpg (string) - the url for the program's logo
+        + uniqueClickTime: 0.5 (number, decimal) - the time in hours since the last click before a click is counted as unique
+        + cookieWindow: 30 (number) - the time in days for sales to be allowed. The time in days between last click and sale.
+        + autoConnect: false (string) - automatically connects affiliates that have the feature enabled
+        + impressionTracking: true (boolean) - if impression tracking is enabled, if no click has been found
+        + voucherTracking: true (boolean) - if TradedoublerTradedouber voucher is enabled
+        + mobileTracking: true (boolean) - if the program has tracking on a mobile friendly site
+        + categories: (object) - the categories the program has been mapped to.
+        + implementationTypeId: 3 (number) - the type of tracking setup for the program. 1 = Click tracking program only, 2 = on-site conversion tracking, 3rd party setup, 3 = on-site conversion tracking, 1st party setup, 4 offline tracking, 3rd party setup, 5 = offline conversion tracking, 1st party setup, 6-Unknown.
+        + startDate: 2009-08-21 (string) - the date the programw went live
+        + endDate: 2012-01-01 (string) - if the program has ended, the date it ended.
+        + persons: (object) - the relevant users for the program
+        + smb: false (boolean) - whether the program is a Tradedoubler Grow program
+        + deepLinking: true (boolean) - if the program allows publishers to deeplink to product pages
+
+    + body
+    
+            {
+                "id": 123456,
+                "name": "ATestProgram",
+                "active": true,
+                "closedProgram": true,
+                "currencyCode": "GBP",
+                "countryCode": "GB",
+                "homePageUrl": "https://www.tradedoubler.com",
+                "logoUrl": "http://www.tradedoubler.com/logo.jpg",
+                "uniqueClickTime": 0.5,
+                "cookieWindow": 30,
+                "autoConnect": false,
+                "impressionTracking": true,
+                "voucherTracking": true,
+                "mobileTracking": true,
+                "categories": [
+                    {
+                        "categoryId": 2,
+                        "categoryName": "Finance"
+                    }
+                ],
+                "startDate": "2020-08-21",
+                "endDate": null,
+                "persons": {
+                    "adminPersonId": 1410413,
+                    "adminPersonName": "A User",
+                    "techPersonId": 1410413,
+                    "techPersonName": "A User"
+                },
+                "programTypeId": 1,
+                "smb": false,
+                "deepLinking": true
+            }
+         
+### End Program [DELETE /advertiser/programs/{programId}]
+Standardised way to end a program. If a program has received no traffic then program is ended immediately. If program has traffic, it is set to end in 30 days to give publishers time to redirect their traffic.
++  Parameters
+    + programId: 123456 (path)
+    + td_mainclosurereason: 899140000 (number)
+        + Members
+            + `899140000: Bankruptcy / Administration`
+            + `899140001: Client Constraints / Commitment`
+            + `899140002: Complexity of TD Systems`
+            + `899140003: Dedicated Account Manager`
+            + `899140004: Financial / Budget Reasons`
+            + `899140005: Fraud / Brand Bidders`
+            + `899140006: Inhouse PVN / Solution`
+            + `899140021: Internal Account`
+            + `899140007: Lack of Local Presence`
+            + `899140008: Network Consolidation`
+            + `899140009: Performance / Client Engagement`
+            + `899140010: Performance / Potential`
+            + `899140011: Sales & Contracts`
+            + `899140012: Service & / Fee Expectations`
+            + `899140013: Service Quality`
+            + `899140014: Stopping Affiliation`
+            + `899140015: Stopping Online Activities`
+            + `899140016: TD Closed (Debt)`
+            + `899140017: TD Closed (Other)`
+            + `899140018: Tracking Issues`
+            + `899140020: Test/Error`
+            + `899140019: Other / Unknown`
+            
+    + td_secondaryClosureReason: 899140000 (number, optional)
+        + Members
+            + `899140000: Bankruptcy / Administration`
+            + `899140001: Client Constraints / Commitment`
+            + `899140002: Complexity of TD Systems`
+            + `899140003: Dedicated Account Manager`
+            + `899140004: Financial / Budget Reasons`
+            + `899140005: Fraud / Brand Bidders`
+            + `899140006: Inhouse PVN / Solution`
+            + `899140021: Internal Account`
+            + `899140007: Lack of Local Presence`
+            + `899140008: Network Consolidation`
+            + `899140009: Performance / Client Engagement`
+            + `899140010: Performance / Potential`
+            + `899140011: Sales & Contracts`
+            + `899140012: Service & / Fee Expectations`
+            + `899140013: Service Quality`
+            + `899140014: Stopping Affiliation`
+            + `899140015: Stopping Online Activities`
+            + `899140016: TD Closed (Debt)`
+            + `899140017: TD Closed (Other)`
+            + `899140018: Tracking Issues`
+            + `899140020: Test/Error`
+            + `899140019: Other / Unknown`
+    
+    
++ Response 200 (application/json)
+    {
+        "message": "Program is closed"
+    }
+
+            
+### Advanced Program Information [GET /advertiser/programs/{programId}/advancedSettings]
+You can view advanced information on a specific program from your organization
++ Parameters
+    + programId: 123456 (path)
+
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + id: 123456 - unique Id for the program
+        + name: ATestProgram - the name of the program
+        + exclusiveVoucher: true - if the sales from exclusive vouchers should be re-allocated to the affiliate granted the exclusive code
+        + redirectUrl: "https://redir.tradedoubler.com/redirects" - URL to redirect users to when clicking on a program link. Usually used for third party trackers like DoubleClick or Advertiser's own redirect scripts
+        + directLink: false - if redirects should be used or the program direct links to a landing page
+        + uniqueClickTime: 12 - the time in hours since the last impression before an impression is counted as unique
+        + impressionWindow: 4 - the time in days for iSales to be allowed. The time in days between last impression and sale.
+        + timeZoneId: 15 - ID for the time zone, see time zone endpoint for all available time zones
+        + timeZone: UTC +1 - The time zone the program is set
+        + allowedDomains: https://*.tradedoubler.com - the domains affiliates can link to for the program. If the domain is not valid the homePageUrl is used instead
+        + plt: 1 - If the program uses Product Level Tracking. 1 = NO ; 2 = HYBRID, both PLT and normal events can be used; 3 = YES, PLT only.
+        + autoApprove: (object) - if the program auto approves affiliate applications and after how many days
+        + encodeUrl: true - if the deeplink/landing page should be url encoded before being added to a redirect URL
+        + firstPartyTracking:  true - if the Tradedoubler's cookie ID, tduid, should be added to the deeplink/landing page to enable first party tracking.
+        
+            {
+                "id": 123456,
+                "name": "ATestProgram",
+                "exclusiveVoucher": true,
+                "redirectUrl": "https://redir.tradedoubler.com/redirects",
+                "directLink": false,
+                "uniqueImpressions": 12,
+                "ImpressionWindow": 4,
+                "timeZoneId": 15,
+                "timeZone": "UTC +1",
+                "allowedDomains": "https://*.tradedoubler.com,https://www.tradedoubler.*",
+                "plt": 1,
+                "autoApprove": {
+                    "action": "A",
+                    "days": 30
+                },
+                "encodeUrl": true,
+                "firstPartyTracking": true
+            }
+         
+### Update Advanced Program Information [PUT /advertiser/programs/{programId}/advancedSettings]
+You can updated advanced information on a specific program from your organization
++ Parameters
+    + programId: 123456 (path)
+
++ Request (application/json)
+
+    + Attributes (object)
+        + name: A Program (optional, string) - the name of the program
+        + exclusiveVoucher: true (optional, boolean) - if the sales from exclusive vouchers should be re-allocated to the affiliate granted the exclusive code
+        + redirectUrl: "https://redir.tradedoubler.com/redirects" (optional, string) - URL to redirect users to when clicking on a program link. Usually used for third party trackers like DoubleClick or Advertiser's own redirect scripts
+        + directLink: false (optional, boolean) - if redirects should be used or the program direct links to a landing page
+        + uniqueClickTime: 12 (optional, number) - the time in hours since the last impression before an impression is counted as unique
+        + impressionWindow: 4 (optional, number) - the time in days for iSales to be allowed. The time in days between last impression and sale.
+        + timeZoneId: 15 (required, number) - ID for the time zone, see time zone endpoint for all available time zones
+        + allowedDomains: https://*.tradedoubler.com  (optional, string) - the domains affiliates can link to for the program. If the domain is not valid the homePageUrl is used instead
+        + plt: 1  (optional, number) - If the program uses Product Level Tracking. 1 = NO ; 2 = HYBRID, both PLT and normal events can be used; 3 = YES, PLT only.
+        + autoApprove: (object) - if the program auto approves affiliate applications and after how many days
+            + action: A (string) - `A` for Auto approve
+            + days: 30 (number) - Days until action applies, i.e. 30 days until a publisher application is approved.
+        + encodeUrl: true  (optional, boolean) - if the deeplink/landing page should be url encoded before being added to a redirect URL
+        + firstPartyTracking:  true  (optional, boolean) - if the Tradedoubler's cookie ID, tduid, should be added to the deeplink/landing page to enable first party tracking.
+       
+    + Body
+    
+            {
+                "name": "A Program",
+                "exclusiveVoucher": true,
+                "redirectUrl": "https://redir.tradedoubler.com/redirects",
+                "directLink": false,
+                "uniqueImpressions": 12,
+                "ImpressionWindow": 4,
+                "timeZoneId": 15,
+                "allowedDomains": "https://*.tradedoubler.com,https://www.tradedoubler.*",
+                "plt": 1,
+                "autoApprove": {
+                    "action": "A",
+                    "days": 30
+                },
+                "encodeUrl": true,
+                "firstPartyTracking": true
+            }
+
++ Response 200 (application/json)
+
+            {
+                "id": 123456,
+                "name": "A Program",
+                "exclusiveVoucher": true,
+                "redirectUrl": "https://redir.tradedoubler.com/redirects",
+                "directLink": false,
+                "uniqueImpressions": 12,
+                "ImpressionWindow": 4,
+                "timeZoneId": 15,
+                "timeZone": "UTC +1",
+                "allowedDomains": "https://*.tradedoubler.com,https://www.tradedoubler.*",
+                "plt": 1,
+                "autoApprove": {
+                    "action": "A",
+                    "days": 30
+                },
+                "encodeUrl": true,
+                "firstPartyTracking": true
+            }
+
+### Program Texts [GET /advertiser/programs/{programId}/texts]
+You can view texts that relate to your programs such as program description, short description etc...
++ Parameters
+    + programId: 123456 (path)
+
++ Request (application/json)
+
+    + Attributes
+        + languageCode: en (string) - 2 character language code
+        + textTypeId: (enum) - The Id for the type of text to be updated
+            + Members
+                + 2 (number) - Long program description
+                + 3 (number) - Short program description
+                + 46 (number) - Restricted keyword policy 
+        + text: "This is the logn description for a program" (string) - The program text
+        
+    + Body
+        
+        {
+            "texts": [
+                {
+                    "languageCode": "en",
+                    "textTypeId": 46,
+                    "text": "Restricted Keyword Policy"
+                },
+                {
+                    "languageCode": "en",
+                    "textTypeId": 2,
+                    "text": "Program Long Description"
+                }
+            ]
+        }
+
++ Response 200 (application/json)
+
+
+            {
+                "programId": 123456,
+                "programName": "Test Account",
+                "texts": [
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 2,
+                        "textTypeName": "Second",
+                        "text": "This the long description for a program"
+                    },
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 3,
+                        "textTypeName": "Short",
+                        "text": "This is the short description for a program"
+                    },
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 46,
+                        "textTypeName": "Restricted keyword policy info",
+                        "text": "This is the keyword policy for a program"
+                    }
+                ]
+            }
+
+### Update Program Texts [PUT /advertiser/programs/{programId}/texts]
+You can update texts that relate to your programs such as program description, short description etc...
++ Parameters
+    + programId: 123456 (path)
+
+
++ Response 200 (application/json)
+
+
+            {
+                "programId": 123456,
+                "programName": "Test Account",
+                "texts": [
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 2,
+                        "textTypeName": "Second",
+                        "text": "This the long description for a program"
+                    },
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 3,
+                        "textTypeName": "Short",
+                        "text": "This is the short description for a program"
+                    },
+                    {
+                        "languageCode": "en",
+                        "textTypeId": 46,
+                        "textTypeName": "Restricted keyword policy info",
+                        "text": "This is the keyword policy for a program"
+                    }
+                ]
+            }
+
+### Program Timezones [GET /advertiser/programs/options/timezones]
+You can view all available timeZones and the corresponding IDs 
+
++ Response 200 (application/json)
+
+
+            [            
+                {
+                    "id": 1,
+                    "countryCode": "GB",
+                    "timeZone": "UTC+0"
+                },
+                {
+                    "id": 2,
+                    "countryCode": "IE",
+                    "timeZone": "UTC+0"
+                }
+            ]
+
+
+## Sources [/advertiser/programs/{programId}/sources]
+Manage sources connected to your programs. You can view applications, accepted sources as well as their category and ranking.
+
+### List Sources [GET]
+You can view more details on a specific ad. This is also useful if you want to update an existing ad.
++ Parameters
+    + programId: 123456 (path)
+    + segmentId: 1 (string, optional) - Filter sources within a specific segment, comma seperated for multiple segments
+    + statusId: 1 (string, optional) - The connection status of the program and source i.e. 1 is under consideration. Comma seperated for multiple statuses
+    + sourceId: 1234567 (integer, optional) - Filter by source
+    + rank: 0 (integer, optional) - Filter by rank
+    + sortBy: lastChanged (string, optional)
+        + Members
+            + `segmentId`
+            + `segmentName`
+            + `statusId`
+            + `created`
+            + `lastChanged`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+    
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 20,
+            "total": 2,
+            "items": [
+                {
+                    "sourceId": 1234567,
+                    "sourceName": "A Source",
+                    "statusId": 1,
+                    "statusName": "Under consideration",
+                    "segmentId": 1,
+                    "segmentName": "General",
+                    "created": "2019-05-14T19:22:05.000+0200",
+                    "lastChanged": "2019-05-14T19:22:05.000+0200",
+                    "rank": 0,
+                    "categoryId": 1234,
+                    "categoryName": "Network - Blind"
+                },
+                {
+                    "sourceId": 1234568,
+                    "sourceName": "Another Source",
+                    "statusId": 3,
+                    "statusName": "Accepted",
+                    "segmentId": 1,
+                    "segmentName": "General",
+                    "created": "2019-05-14T01:31:38.000+0200",
+                    "lastChanged": "2019-05-14T01:31:38.000+0200",
+                    "rank": 0,
+                    "categoryId": 1234,
+                    "categoryName": "Network - Blind"
+                }
+            ]
+        }
+
+
+### Update Source [PUT]
+Update the source's connection to a program
++ Parameters
+    + programId: 123456 (path)
+    
++ Request (application/json)
+
+       {
+            "items": [
+                {
+                    "sourceId": 2543212,
+                    "statusId": 6,
+                    "segmentId": 1,
+                    "categoryId": 1234,
+                    "rank": 0
+                },
+                {
+                    "sourceId": 2543213,
+                    "statusId": 3,
+                    "segmentId": 10,
+                    "categoryId": 1234,                  
+                    "rank": 0
+                }
+            ]
+        }
+
++ Response 200 (application/json)
+
+        {
+            total: 2,
+            success: 1,
+            successItems:[
+                {
+                    "sourceId": 2543212,
+                    "statusId": 6,
+                    "segmentId": 1
+                }
+            ],
+            fail: 1,
+            failItems:[
+                {
+                    "sourceId": 2543213,
+                    "statusId": 3,
+                    "segmentId": 10,
+                    "reason": "segment not found"
+                }
+            ]
+        }
+
+## Commissions [/advertiser/programs/{programId}/commissions]
+Commissions are the fees paid to your publishers for generating traffic and/or sales to your programs. A commission is created for an event (a click, lead or sale) and created for programs. To setup different commission levels you assign commissions against a segment (which is used to group sources)
+
+### List commissions [GET]
+A list of commissions for a specific program. You can filter by status - active commissions, past or future - or view commissions for specific segments.
+
++ Parameters
+    + programId: 123456 (path)
+    + segmentIds: 1,2 (string, optional) - Filter commissions for specific segments. Mutiple ids should be comma seperated
+    + status: active, future (string, optional) - filter on the status of the commission, multiple values should be comma seperated
+        + Members
+            + `active`
+            + `future`
+            + `historic`
+    startDate: 20200101 (string, optional) - filter if the commission is active after the start date. (ISO-8601 YYYYMMDD)
+    endDate: 20200201 (string, optional) - filter if the commission is active or does not stop before the end date. (ISO-8601 YYYYMMDD)
+    + sortBy: segmentId (string, optional)
+        + Members
+            + `segmentId`
+            + `segmentName`
+            + `startDate`
+            + `endDate`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 20,
+            "total": 2,
+            "items": [
+                {
+                    "programId": 298444,
+                    "programName": "UKAutomationprogramus",
+                    "segmentCommissions": [
+                        {
+                            "segmentId": 1,
+                            "segmentName": "General",
+                            "eventId": 5,
+                            "eventName": "Sale",
+                            "eventType": "Sales",
+                            "eventRule": "Terminate",
+                            "startDate": "2019-04-24T00:00:00.000+0200",
+                            "endDate": null,
+                            "publisherCommission": 0.0,
+                            "publisherCommissionPercent": 0.0,
+                            "virtualCommission": 0.0,
+                            "virtualCommissionPercent": 0.0
+                        },
+                        {
+                            "segmentId": 1,
+                            "segmentName": "General",
+                            "eventId": 2,
+                            "eventName": "Unique visitor",
+                            "eventType": "Unique visitors",
+                            "eventRule": "Start",
+                            "startDate": "2019-04-19T00:00:00.000+0200",
+                            "endDate": null,
+                            "publisherCommission": 0.0,
+                            "publisherCommissionPercent": 0.0,
+                            "virtualCommission": 0.0,
+                            "virtualCommissionPercent": 0.0
+                        }
+                    ]
+                }
+            ]
+        }
+
+### Change commission [POST]
+All changes to commissions are a post request as we create a new commission in our system.
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+    
+    + Body
+            
+            {
+                
+              "segmentId":3,
+              "eventId":4,
+              "startDate": "20200101",
+              "endDate": null,
+              "publisherCommission": 2,
+              "publisherCommissionPercent": null,
+              "virtualCommission": null,
+              "virtualCommissionPercent": null
+
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "segmentId": 3,
+            "segmentName": "Test",
+            "eventId": 4,
+            "eventName": null,
+            "eventType": "Leads",
+            "eventRule": "Continue",
+            "startDate": "2020-01-01T00:00:00.000+0100",
+            "endDate": null,
+            "publisherCommission": 2,
+            "publisherCommissionPercent": 2,
+            "virtualCommission": 0,
+            "virtualCommissionPercent": 0
+        }
+
+## Segments [/advertiser/programs/{programId}/segments]
+Segments are used to group sources for each program. By using segments you can easily setup different commission levels on your programs and manage your sources more easily.
+
+### Segments [GET]
+A list of segments created for a specific program.
+
++ Parameters
+    + programId: 123456 (path)
+    + deleted: false (boolean, optional) - Include segments that have been deleted. (@Nick Check if it true it is deleted and not)
+    + sortBy: id (string, optional)
+        + Members
+            + `id`
+            + `name`            
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 20,
+            "total": 2,
+            "items": [
+                {
+                    "id": 1,
+                    "name": "General",
+                    "ConnectedSources": {
+                        "statusId": 3,
+                        "sourceCount": 10
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "Cashback - gold",
+                    "connectedSources": {
+                        "statusId": 2,
+                        "sourceCount": 4
+                    }
+                }
+            ]   
+        }
+
+### Create Segment [POST]
+Create a new segment for a specific program.
+
++ Request (application/json) 
+    + Attributes
+        + segmentName: New Segment (string) - Name of the new segment
+    
+    + Body
+        {
+            "segmentName": "New Segment"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "segmentId": 2,
+            "segmentName": "New Segment"
+        }
+
+### Update Segment [PUT /{sourceId}]
+Update the name of a segment created for a specific program. You cannot change segmentId: 1 which is the default segment called General.
+
++ Request (application/json) 
+    + Attributes
+        + segmentName: New Segment (string) - Name of the new segment
+        + segmentId: 2 (number) - The Id of the Segment
+    
+    + Body
+        {
+            "segmentId": 2, 
+            "segmentName": "New Segment"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "segmentId": 2,
+            "segmentName": "New Segment"
+        }
+        
+#Group Pending Sales
+## Pending Sales [/advertiser/pendingSales]
+In Tradedoubler transactions can be given a pending status whereby an advertiser has a set amount of time to validate a pending sale (usually up to 90 days) and approve/deny the transaction. This is usually to allow for an advertiser's returns or cancellation policy. Being able to approve a transaction in Tradedoubler as soon as it is confirmed in an advertiser's system provides greater transparency to your publishers around when they will be paid for their activities.
+
+### List pending transactions [GET]
+Get a list of all your transactions (leads and sales) and see the time until they will automatically validate
+
++ Parameters
+    + programIds: 123456,232156 (string, optional) - Filter pending transactions for specific programs. Mutiple ids should be comma seperated
+    + startDate: 20190101 (date, optional) - filter if the commission is active after the start date. (ISO-8601 YYYYMMDD)
+    + endDate: 20200101 (date, optional) - filter if the commission is active or does not stop before the end date. (ISO-8601 YYYYMMDD)  
+    + sortBy: pendingTime (string, optional)
+        + Members
+            + `pendingTime`
+            + `timestamp`
+            + `transactionId`            
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200 (application/json)
+
+        {
+            offset: 10,
+            limit: 20,
+            total: 3245,
+            items:[
+                    {
+                    "programId": 123456,
+                    "programName": "A Program",
+                    "countryCode": true,
+                    "eventId": 55,
+                    "eventName": "Basket Sale",
+                    "eventType": "SALES",
+                    "rxNumber": "99243493231206",
+                    "transactionId": "12345678912345",
+                    "timestamp": 1567515846997,
+                    "pendingTime": 32,
+                    "pendingRule": "AUTO_APPROVE",
+                    "sourceId": 1234567,
+                    "sourceName": "A Source",
+                    "currencyCode": "GBP",
+                    "orderValue": 15.2,
+                    "queuedForProcess": false,
+                    "publisherCommission": 1.3
+                    }
+                ]
+        }
+
+### Validate transactions [PUT]
+Validate transactions by changing the status to approved or denied. For transactions that are denied we require a reasonId to give the publisher greater transparency as to why the transaction was denied. (@Nick add reason codes). It is possible to modify the order value for a transactions to reflect a partial return/cancellation, this can also be done without updating the transaction status - i.e. the transaction will remain in a pending state.
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Attributes (object)
+        + transactionId: 123456 (number) - Id of the transaction
+        + action: Approve (string) - Action to apply to the transaction i.e. approve, deny or update
+            + Members
+                + Approve
+                + Update
+                + Deny
+        + reason: 6 (enum) - When denying a transaction, you must supply a reason
+            + 6 - Application/Credit Check Denied
+            + 7 - Fraudulent Order/Application
+            + 8 - Duplication / Sale Accredited to Another Source
+            + 9 - Order Yet To Be Fulfilled
+            + 10 - Returned goods
+            + 13 - Invalid Lead
+            + 14 - Order Cancelled
+            + 16 - Insuffient Information (Applicable only for untracked sales)
+            + 17 - Order not found (Applicable only for untracked sales)
+            + 18 - Sale Already Accredited to Publisher (Applicable only for untracked sales)
+            + 19 - Voucher incorrectly used
+        + amount: 0.99 (number, optional) - When updating a transaction, the new order value i.e. for partial returns
+        + currencyCode: EUR (string, optional) - When updating a transaction, the currency for the new order value
+
+    + Body
+    
+        {
+            "items": [
+                {
+                    "transactionId": "12345678912345",
+                    "action": "approve",
+                },
+                {
+                    "transactionId": "12345678912346",
+                    "action": "deny",
+                    "reason": 10,
+                },
+            ]
+        }
+
++ Response 200 (application/json)
+
+        {
+            total: 2,
+            success: 1,
+            fail: 1,
+            items:[
+                    {
+                    "transactionId": "12345678912345",
+                    "action": "approve",
+                    "status": 0
+                    },
+                    {
+                        "transactionId": "12345678912346",
+                        "action": "deny",
+                        "reason": 10
+                        "status": -1,
+                        "error" : {
+                                "code": 9996,
+                                "message": "Order is not in pending status"
+                            }
+                    }
+                ]
+        }
+
+#Group Sources
+## Sources [/advertiser/sources]
+
+### List Sources [GET]
+
++ Parameters
+    + programId: 123456 (number) -  You can only search for sources that are available for a program. This requires the Id of the program 
+    + sourceName: aSource (optional, string) - 
+    + sourceIds: [123456,654321] (optional, array[number]) - Array of sourceIds to search for
+    + categoryIds: [1,2] (optional, array[number]) - Array of source category Ids
+    + sourceTypeId: 1 (optional, number) - Type of source
+    + promotionTypeId: 1 (optional, number) - 
+    + sortBy: sourceId (string, optional)
+        + Members
+            + `sourceId`
+            + `sourceName`
+            + `sourceTypeId`
+            + `promotionTypeId`
+            + `trafficTypeId`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200
+
+        {
+             "offset": 0,
+              "limit": 20,
+              "total": 1,
+              "items": [
+                {
+                  "sourceId": 1234567,
+                  "sourceName": "Data",
+                  "countryCode": "SE",
+                  "categoryIds": [
+                      1
+                  ],
+                  "sourceTypeId": 1,
+                  "promotionTypeId": 17,
+                  "promotionTypeName": "Bloggers",
+                  "description": "Site Description",
+                  "url": "https://blogger.tradedoubler.com",
+                  "trafficSizeId": 1,
+                  "publisher": {
+                                 "logoUrl": "https://www/tradedoubler.com/logo.jpg",
+                                 "description": "A publisher",
+                                 "id": 35113,
+                                 "name": "FISO Limited"
+                             }
+                  }
+                ]
+          }
+
+## Custom Categories [/categories]
+Advertisers can create their own categories which can be applied to any of their sources. They can used as filters when managing sources or for reporting.
+
+### List Categories [GET]
+Get categories created for an advertiser to use for sources
+
++ Parameters
+    + categoryName: `A category` (string, optional) - Free text search on category name
+    + categoryId: 1 (integer, optional) - Filter by the category id
+    + sortBy: categoryId (string, optional)
+        + Members
+            + `categoryId`
+            + `categoryName`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 20,
+            "total": 5,
+            "items": [
+                {
+                    "categoryName": "Content - Travel",
+                    "categoryId": 1
+                },
+                {
+                    "categoryName": "Content - Shopping",
+                    "categoryId": 2
+                },
+                {
+                    "categoryName": "Content - Blog",
+                    "categoryId": 3
+                },
+                {
+                    "categoryName": "Content - Directory/Portal",
+                    "categoryId": 4
+                },
+                {
+                    "categoryName": "Content",
+                    "categoryId": 5
+                }
+            ]
+        }
+
+### Update a Category [PUT]
+Update a category name
+
++ Parameters
+    + categoryId: 1234 (path)
+
++ Request (application/json)
+
+        {
+            "categoryName": "A New Category"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "categoryId": 1234,
+            "categoryName": "A New Category" 
+        }
+
+### Create a new Category [POST]
+Create a new custom category
+
++ Request (application/json)
+
+        {
+            "categoryName": "A New Category"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "categoryId": "1234",
+            "categoryName": "A New Category"
+        }
+
+#Group Invoices
+## Invoices [/advertiser/invoices]
+View invoices and their status and get copies of your invoice.
+
+### List Invoices [GET]
+List of invoices
++ Parameters
+    + invoiceNumber: `UK1000000` (string, optional) - Invoice number
+    + invoiceStatus: 1 (integer, optional) - Status of the invoice @Nick to add options
+    + programId: 123456 (integer, optional) - Filter invoices that relate to a program
+    + fromDate: `20190101` (date,optional) - Include invoices from a date
+    + toDate: `20190201` (date,optional) - Include invoices up to a date
+
++ Response 200 (application/json)
+
+        [
+            {
+                "invoiceNumber": "GBXXXXXXXXX",
+                "programId": 123456,
+                "programName": "A Program",
+                "currencyCode": "EUR",
+                "amountWithoutVat": 9999.99,
+                "invoiceStatus": 5,
+                "createdDate": "2020-06-01T04:43:31.000+0200",
+                "dueDate": "2020-07-03T16:44:18.000+0200",
+                "paidDate": "2020-06-28T00:00:00.000+0200"
+            }
+        ]
+        
+### Get Invoice as PDF [GET /advertiser/invoices/{invoiceId}/pdf]
+Export an invoice as a PDF
++ Parameters
+    + invoiceId: SE100000001 (path)
+
++ Response 200 (application/octet-stream))
+
+
+#Group Events
+## Advertiser Custom Events [/advertiser/events]
+Custom events are a flexible way of tracking which products, categories or services converted. This provides better reporting insight and the ability to set different commissions for different events in order to maintain margin control. Each event can have a different pending period to reflect the different returns/cancellation policies based on the type of product or service. 
+
+### List Events [GET]
+Get custom events created for an advertiser
+
++ Parameters
+    + eventTypeId: 5 (integer, optional) - Filters on eventType - leads or Sales
+        + Members
+            + 4 - leads
+            + 5 - Sales
+    + pending: true (boolean, optional) - Filters on if the event has a pending period
+    + ruleId: 1 (integer, optional) - Filters on the events rule.
+        + Members
+            + 4 - Recurring
+            + 2 - Continue
+            + 3 - Terminate
+    + sortBy: id (string, optional)
+        + Members
+            + `id`
+            + `name`            
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 20,
+            "total": 1,
+            "items": [
+                {
+                    "id": 66564,
+                    "name": "A Lead",
+                    "eventTypeId": 4,
+                    "eventTypeName": "Leads",
+                    "ruleId": 4,
+                    "ruleName": "Recurring",
+                    "pending": false,
+                    "daysToAutoApprove": 0,
+                    "daysToAutoDeny": 0
+                }
+            ]
+        }
+
+### Create an Event [POST]
+Create a new event for your programs.
+
++ Request (application/json)
+
+         {            
+            "name": "A Sale",
+            "eventTypeId": 5,
+            "ruleId": 4,
+            "pending": true,
+            "pendingPeriod": 30
+        }
+
++ Response 200 (application/json)
+
+       {
+            "id": 1234,
+            "name": "A Sale",
+            "eventTypeId": 5,
+            "eventTypeName": "Sales",
+            "ruleId": 4,
+            "ruleName": "Recurring",
+            "pending": true,
+            "daysToAutoApprove": 30,
+            "daysToAutoDeny": 0
+        }
+
+
+
+### Update Event [PUT /advertiser/events/{eventId}]
+Update an existing event. You cannot change the type of event (from a sale to a lead or vice versa), you would need to create a new event.
+
++ Request (application/json)
+
+        {            
+            "name": "A Sale",
+            "ruleId": 4,
+            "pending": true,
+            "pendingPeriod": 30
+        }
+
++ Response 200 (application/json)
+
+       {
+            "id": 123,
+            "name": "A Sale",
+            "eventTypeId": 5,
+            "eventTypeName": "Sales",
+            "ruleId": 4,
+            "ruleName": "Recurring",
+            "pending": true,
+            "daysToAutoApprove": 30,
+            "daysToAutoDeny": 0
+        }
+
+#Group Product Feeds
+## Advertiser Custom Events [/advertiser/productfeeds]
+Product Feeds allow an advertiser to upload all products available in their ecommerce website which can be consumed by publishers for numerous uses, for instance powering price comparison websites/widgets, Google Comparison Shopping Services Partners or even real-time product availability.
+
+### List Feeds [GET]
+Get all product feeds created for an advertiser
+
++ Response 200 (application/json)
+
+        [
+           {
+             "feedId": 12345,
+             "name": "ProdFeedTest",
+             "active": true,
+             "secret": true,
+             "visible": true,
+             "currencyCode": "SEK",
+             "languageCode": "sv",
+             "description": "ProdFeedTest description",
+             "organizationId": 12345,
+             "programId": 12345,
+             "protocol": "http",
+             "format": "csv"
+           },
+           {
+             "feedId": 12346,
+             "name": "ProdFeedTest2",
+             "active": true,
+             "secret": true,
+             "visible": true,
+             "currencyCode": "SEK",
+             "languageCode": "sv",
+             "description": "Another ProdFeedTest description",
+             "organizationId": 12345,
+             "programId": 12346,
+             "protocol": "http",
+             "format": "csv"
+           }
+        ]
+
+### Create a Product Feed [POST]
+Create a new product feed for one of your programs.
+
++ Request (application/json)
+
+        {
+            "name": "ProdFeedTest",
+            "active": true,
+            "secret": true,
+            "visible": true,
+            "currencyCode": "SEK",
+            "languageCode": "sv",
+            "description": "ProdFeedTest description",
+            "programId": 12345,
+            "protocol": "http",
+            "format": "csv"
+        }
+
++ Response 200 (application/json)
+        
+        {
+            "feedId": 12345,
+            "name": "ProdFeedTest",
+            "active": true,
+            "secret": true,
+            "visible": true,
+            "currencyCode": "SEK",
+            "languageCode": "sv",
+            "description": "ProdFeedTest description",
+            "organizationId": 12345,
+            "programId": 12345,
+            "protocol": "http",
+            "format": "csv"
+        }
+
+### View a Feed [GET /advertiser/productfeeds/{feedId}]
+Get a specific feed based on feed id.
+
++ Response 200 (application/json)
+
+        {
+            "feedId": 12345,
+             "name": "ProdFeedTest",
+             "active": true,
+             "secret": true,
+             "visible": true,
+             "currencyCode": "SEK",
+             "languageCode": "sv",
+             "description": "ProdFeedTest description",
+             "organizationId": 12345,
+             "programId": 12345,
+             "protocol": "http",
+             "format": "csv"
+        }
+
+### Update a Feed [PUT /advertiser/productfeeds/{feedId}]
+Update an existing product feed.
+
++ Request (application/json)
+
+        {
+            "name": "ProdFeedTest",
+            "active": true,
+            "secret": true,
+            "visible": true,
+            "currencyCode": "SEK",
+            "languageCode": "sv",
+            "description": "ProdFeedTest description",
+            "programId": 12345
+        }
+
++ Response 200 (application/json)
+
+        {
+            "name": "ProdFeedTest",
+            "active": true,
+            "secret": true,
+            "visible": true,
+            "currencyCode": "SEK",
+            "languageCode": "sv",
+            "description": "ProdFeedTest description",
+            "programId": 12345,
+            "protocol": "http",
+            "format": "csv"
+        }
+
+
+# Group Tokens
+## Advertiser Tokens [/advertiser/tokens]
+Tokens are required to use Tradedoubler's older API services: Products, Vouchers, Claims and Conversions. Documentation found at: https://dev.tradedoubler.com
+
+### List tokens [GET]
+You can view a list of available tokens:
+
++ Response 200 (application/json)
+
+        {
+           "tokenSystems":[
+              "UTS"
+           ],
+           "tokens":[
+              {
+                 "id":333,
+                 "name":"TradeDoubler",
+                 "token":"XXXXXXXXXXXXXXXXXX",
+                 "tokenType":"ADVERTISER",
+                 "tokenSystem":"UTS"
+              }
+           ]
+        }
+
+### Refresh a token [POST /advertiser/token]
+
+You can refresh your token should you require:
++ Request (application/json)
+
+        {
+            "id": 123,
+            "tokenType": "ADVERTISER",
+            "tokenSystem": "UTS"
+        }
+
++ Response 200 (application/json)
+
+# Group Reporting
+## Statistics [/advertiser/report/statistics]
+Statistics is the main reporting endpoint. This reflects a lot of work to simplify Tradedoubler's reports from the old advertiser interface into a single endpoint with the ability to change how the statistics are grouped. 
+### Statistics [GET]
+Detailed statistics for advertiser, they can be grouped by date, source, program, ad.
++ Parameters
+    + intervalType: year (enum(string)) - Interval Grouping. 
+        + Members
+            + `day` - Group by day with max range of 92 days
+            + `month` - Group by month
+            + `year` - Group by year
+            + `period` - Total for the entire period
+    + reportType: date (enum(string)) - Report Type Grouping
+        + Members
+            + `source` - Test info
+            + `program`
+            + `ad`
+            + `date`
+    + fromDate: `20200101` (date) - The date the report runs from
+    + toDate: `20200201` (date) - The date the report runs until
+    + sourceId: 1234567 (long, optional) - Filter by a source ID
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string) - The ISO 4217 code of currency
+    + sortBy: impressions (enum(string)) - The field used to sort the results
+        + Members
+            + Grouping by date - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue
+            + Grouping by source - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, sourceId, sourceName, sourceCountryCode
+            + Grouping by program - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, programId, programName, programCountryCode
+            + Grouping by ad - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, adId, adName, adCategoryName
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 2,
+            "reportCurrencyCode": "GBP",
+            "items": [{
+                    "impressions": 0,
+                    "clicks": 1,
+                    "uniqueVisitors": 1,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-01T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }, {
+                    "impressions": 0,
+                    "clicks": 8,
+                    "uniqueVisitors": 4,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-02T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }
+            ]
+        }
+
+### Export [GET /advertiser/report/statistics/export]
+Export summary statistics into another reporting format - for analysis in tools such as Excel
++ Parameters
+    + format: json (enum(string)) - Format of the export file
+        + Members
+            + `json`
+            + `csv`
+            + `xlsx`
+            + `xml`
+    + intervalType: year (enum(string)) - Interval Grouping. 
+        + Members
+            + `day`
+            + `month`
+            + `year`
+            + `period`
+    + reportType: date (enum(string)) - Report Type Grouping
+        + Members
+            + `source` - Test info
+            + `program`
+            + `ad`
+            + `date`
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until
+    + sourceId: 1234567 (long, optional) - Filter by a source ID
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + sortBy: impressions (enum(string)) - The field used to sort the results
+        + Members
+            + Grouping by date - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue
+            + Grouping by source - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, sourceId, sourceName, sourceCountryCode
+            + Grouping by program - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, programId, programName, programCountryCode
+            + Grouping by ad - impressions, clicks, uniqueVisitors, leads, iLeads, sales, iSales, commission, orderValue, adId, adName, adCategoryName
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "reportCurrencyCode": "GBP",
+            "items": [{
+                    "impressions": 0,
+                    "clicks": 1,
+                    "uniqueVisitors": 1,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-01T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }, {
+                    "impressions": 0,
+                    "clicks": 8,
+                    "uniqueVisitors": 4,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-02T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }
+            ]
+        }
+
+## Transaction [/advertiser/report/transactions]
+Transactions relate to sales or leads and give detailed information
+### List transaction [GET]
+List of transactions for a given source        
+
++ Parameters      
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until    
+    + reportCurrencyCode: EUR (string) - The ISO 4217 code of currency
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + sourceId: 1234567 (integer, optional) - Filter by Source ID.
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + eventId: 12345 (integer, optional) - Filter by an event ID
+    + orderOrLeadNumber: order1234 (string, optional) - Filter transactions by order or lead number
+    + status: P (enum(string), optional) - The status of a transaction
+        + Member
+            + P - Pending
+            + A - Accepted
+            + D - Denied
+    + sortBy: timeOfTransaction (enum(string), optional) - The field used to sort the results
+        + Members
+            + timeOfTransaction
+            + timeOfCreate 
+            + orderNumber
+            + leadNumber
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + transactionId: 123456789 (number) - Unique ID for each transaction
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + adId: 12345678 (number) - The ID of the Ad
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database (for offline sales this can be some time after the time of transaction)
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed (usually when the status after an advertiser validates transactions)
+        + leadNumber: null (string) - When eventTypeId = 4 (transaction is a lead) the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 (transaction is a sale) the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 (transaction is a sale) the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi: (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/advertiser` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/advertiser` that was clicked on before the transaction was made
+        + crossDevice: -1 (string) - If the sale was cross device, the validation method id
+        + pendingRule: auto_approve (string) - If the sale is pending whether the sale will auto approve or auto deny
+        + deviceObject (object) - Device Object contains all device information related to the transaction if it took place on a mobile/tablet
+            + deviceType: `mobile` (string) - The type of device underConsideration
+            + operatingSytem: `Android` (string) - The operating system of the device
+            + browser: `Chrome` (string) - The browser used
+        + modified: false (boolean) - Identifies if the transaction has been modified
+            
+        
+    + Body
+            
+            {
+                "limit": 1,
+                "offset": 0,
+                "total": 150,
+                "reportCurrencyCode": "EUR",
+                "items": [{
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": "mobile",
+                        "operatingSystem": "Android",
+                        "browser": "Chrome"
+                    },
+                    "modified": false
+                }]
+            }
+
+### Export Transactions [GET /advertiser/report/transactions/export]
+Export list of transactions for a given source
+
++ Parameters
+    + format: json (enum(string)) - Format of the export file
+        + Members
+            + `json`
+            + `csv`
+            + `xlsx`
+            + `xml`
+    + sourceId: 1234567 (integer, optional) - Source ID. Currently we only allow transactions report to be run for one Source at a time.      
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until    
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + orderOrLeadNumber: order1234 (string, optional) - Filter transactions by order or lead number
+    + sortBy: timeOfTransaction (enum(string), optional) - The field used to sort the results
+        + Members
+            + timeOfTransaction
+            + timeOfCreate 
+            + orderNumber
+            + leadNumber
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+ 
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database (for offline sales this can be some time after the time of transaction)
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed (usually when the status after an advertiser validates transactions)
+        + leadNumber: null (string) - When eventTypeId = 4 (transaction is a lead) the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 (transaction is a sale) the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 (transaction is a sale) the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi: (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/advertiser` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/advertiser` that was clicked on before the transaction was made
+        + crossDevice: -1 (string) - If the sale was cross device, the validation method id
+        + pendingRule: auto_approve (string) - If the sale is pending whether the sale will auto approve or auto deny
+        + deviceObject (object) - Device Object contains all device information related to the transaction if it took place on a mobile/tablet
+            + deviceType: `mobile` (string) - The type of device underConsideration
+            + operatingSytem: `Android` (string) - The operating system of the device
+            + browser: `Chrome` (string) - The browser used
+        + modified: false (boolean) - Identifies if the transaction has been modified
+        
+    + Body
+            {
+                "reportCurrencyCode": "EUR",
+                "items": [{
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": "mobile",
+                        "operatingSystem": "Android",
+                        "browser": "Chrome"
+                    },
+                    "modified": false
+                }]
+            }
+
+## Dashboard [/advertiser/report/dashboard]
+Collection of summary reports
+### Summary statistics [GET]
+Summary statistics used for the dashboard within the publisher interface.
++ Parameters
+    + intervalType: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+    + reportCurrencyCode: EUR - The ISO 4217 code of the currency.
+    
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "impressions": 800000,
+            "clicks": 50000,
+            "uniqueVisitors": 35000,
+            "leads": 0,
+            "iLeads": 0,
+            "sales": 1000,
+            "salesOrderValue": 30000.00,
+            "iSales": 0,
+            "iSalesOrderValue": 0.00,
+            "publisherCommission": 1250.00,
+            "tdCommission": 0.00,
+            "reportCurrencyCode": "EUR",
+            "data":{
+                "impressions":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 500000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 300000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    }
+                ],
+                "clicks":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 30000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 20000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    }
+                ],
+                "uniqueVisitors":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 20000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 15000,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    }
+                ],
+                "leads":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 0,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 0,
+                        "commission": 0.00
+                    }
+                ],
+                "ileads":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 0,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 0,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    }
+                ],
+                "sales":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 700,
+                        "publisherCommission": 1000,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-01T01:00:00.000+0000",
+                        "value": 300,
+                        "publisherCommission": 250,
+                        "tdCommission": 0
+                    }
+                ],
+                "iSales":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 0,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 0,
+                        "publisherCommission": 0,
+                        "tdCommission": 0
+                    }
+                ],
+                "orderValue":[
+                    {
+                        "date":"2020-01-01T00:00:00.000+0000",
+                        "value": 20000.00
+                    },
+                    {
+                        "date":"2020-01-02T01:00:00.000+0000",
+                        "value": 10000.00
+                    }
+                ],
+                "commission":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "publisherCommission": 1000,
+                        "tdCommission": 0
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "publisherCommission": 250,
+                        "tdCommission": 0
+                    }
+                ]
+            }
+        }
+
+### Top performing programs [GET /advertiser/report/dashboard/programs]
+Provides summary statistics sorted for top performing programs 
++ Parameters
+    + intervalType: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+    + reportCurrencyCode: EUR (string) - The ISO 4217 code of the currency.
+    + sortBy: `publisherCommission` (string, optional) - The field used to sort the results
+        + Members
+            + `sales`
+            + `leads`
+            + `salesOrderValue`
+            + `publisherCommission`
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 10,
+            "total": 2,
+            "reportCurrencyCode": "EUR",
+            "items": [
+                {
+                    "programName": "Program 1",
+                    "programId": 12345,
+                    "leads": 0,
+                    "sales": 800,
+                    "salesAmount": 25000
+                    "publisherCommission": 1000.00,
+                    "tdCommission": 0
+                },
+                {
+                    "programName": "Program 2",
+                    "programId": 54321,
+                    "leads": 0,
+                    "sales": 800,
+                    "salesAmount": 25000
+                    "publisherCommission": 1000.00,
+                    "tdCommission": 0
+                }
+            ]
+        }
+
+### Top performing sources [GET /advertiser/report/dashboard/sources]
+Provides summary statistics sorted for top performing sources 
++ Parameters
+    + intervalType: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+    + reportCurrencyCode: EUR (string) - The ISO 4217 code of the currency.
+    + sortBy: `publisherCommission` (string, optional) - The field used to sort the results
+        + Members
+            + `sales`
+            + `leads`
+            + `salesOrderValue`
+            + `publisherCommission`
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 10,
+            "total": 2,
+            "reportCurrencyCode": "EUR",
+            "items": [
+                {
+                    "sourceId": 1234567,
+                    "sourceName": "Source 1",
+                    "leads": 0,
+                    "sales": 800,
+                    "salesAmount": 25000
+                    "publisherCommission": 1000.00,
+                    "tdCommission": 0
+                },
+                {
+                    "sourceId": 7654321,
+                    "sourceName": "Source 2",
+                    "leads": 0,
+                    "sales": 200,
+                    "salesAmount": 10000
+                    "publisherCommission": 250.00,
+                    "tdCommission": 0
+                }
+            ]
+        }

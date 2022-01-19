@@ -1,0 +1,562 @@
+FORMAT: 1A
+HOST: https://connect.tradedoubler.com/
+
+# Tradedoubler Agency Management API
+
+Tradedoubler is an Affiliate Marketing Network, connecting various advertising brands with our network of publishing websites. Tradedoubler's platform manages this relationship between advertisers and publishers. 
+This documentation relates to the Agency API, which allows Media Agencies or E-Commerce platforms that are responsible for multiple merchants, brands or advertisers to manage their clients on Tradedoubler's platform. 
+
+The API allows each `Agency` user to view and create advertisers mapped to their agency organization and impersonate each advertiser so that they have full access to the full suite of management and reporting endpoints within the [Advertiser API](https://advertiserwip.docs.apiary.io/).
+
+Authentication
+==============
+Authentication against the API is handled by [oAuth 2.0](https://oauth.net/2/) using bearer tokens. Once you have authentication using the oauth endpoint, all requests require a bearer token sent via the `Authorization` header as per the following format:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs
+```
+
+You will need a valid Client ID and Secret code before you can use the API. 
+You will need to retrieve this through the [Tradedoubler API Client UI](https://solutions.tradedoubler.com/tools/api-client).
+For more information see [oAuth Section](#/reference/o-auth-2-0)
+
+Response Formats
+================
+The reponse format for all API requests is JSON. All requests should therefore contain the following header:
+```
+Content-Type: application/json
+```
+
+Paging
+======
+To handle large results and to optimise performance of our API we use paginatation on a number of our endpoints to reduce the size of results returned to the client. All endpoints supporting pagination will return 2 attributes:
+- offset
+- limit
+
+To page through the results you need to supply two fields within the body of your GET request:
+
+|Paramater|Description|Details|
+|:--------|-----------|-------|
+offset|Offset the results by a specified amount|Integer, default is 0|
+limit|Limit the number of results to be returned|Integer, default is 20, maxmium limit is 100 unless specified
+
+For example: 
+- If the limit is default at 20 and an endpoint produces 100 results, only the first 20 will be returned (results 0 to 19). 
+- In order to retrieve the remaining results, use the offset parameter. In this example, adding offset=20 to the query string parameters.
+- Results begin at offset 0. If you're retrieving a report with limit=20, page 2 will begin at offset=20, page 3 at offset=40, page 4 at offset=60, etc.
+
+Roles
+=====
+Users can be given one of four roles. This determines which endpoints they can access.
+
+Agency Management
+-----------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/organizations|&#10004;|&#10004;||
+POST|/organizations|&#10004;|&#10004;||
+GET|/organizations/users|&#10004;|&#10004;||
+
+User Management
+---------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users|&#10004;|||
+POST|/users|&#10004;|||
+GET|/users/{logonAccountId}|&#10004;|||
+PUT|/users/{logonAccountId}|&#10004;|||
+DELETE|/users/{logonAccountId}|&#10004;|||
+
+
+# Group oAuth 2.0
+
+## Bearer and Refresh Token [/uaa/oauth/token]
+Tradedoubler APIs use oAuth2 authentification with refreshTokens.
+All requests must be validated with a bearerToken in the header request.
+
+Only use oAuth2 credentials when you don't already have a refresh token!
+
+### Client Credentials
+
+To use our APIs you will need to create a client which provides a ClientId and ClientSecret. 
+The client is required to generate a bearer token which is used on all subsequent API requests to validate your account and role. 
+You can create your API client using our tool at the following URL: https://solutions.tradedoubler.com/tools/api-client
+
+Your clientSecret is only shown once when you create a new client. 
+If you do not know your clientSecret you must delete and recreate the client in the [API Client UI](https://solutions.tradedoubler.com/tools/api-client)!
+
+
+<img width="125%" src="https://hst.tradedoubler.com/file/47446/api_client_screenshot.jpg"/></br>
+
+### Bearer token [POST]
+To generate a bearer token you need to send a POST request to the oauth endpoint with your username and password. 
+All requests have to be signed with an Authorization generated by a valid ClientID and ClientSecret in the Header:
+```
+Authorization: Basic U3dhZ3dsciByb2Nrcw== 
+```
+Where `U3dhZ3dsciByb2Nrcw==` is Base64 encoding of ClientID and ClientSecret
+`base64encoded(ClientID:ClientSecret)`
++ Request (application/x-www-form-urlencoded)
+
+    +  Body
+        
+        grant_type=password&username=YOURUSERNAME&password=YOURPASSWORD
+            
+
++ Response 200 (application/json)
+
+        {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs",
+          "token_type": "bearer",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImV4cCI6MTU1MDU4MTgxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc1ZDhlMjg2LTJmMDMtNDM4NS04MDhiLTkyMGUyMDZhMDdjMyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.CLb7wcUqd0YnTbSwaR99KLZiYkvOj_JRuU6D-_EmIYo",
+          "expires_in": 899,
+          "scope": "read",
+          "tduser": "3af6022d9ff466715109f59d6b78024b24705cdbc4a42d8910ca6fdb0a7dd71982d47a5407ac541a02d7394f2d1fb982554ab4c5a69022474a0d734693fc2a3083a2430dc28958d262d98fb90ac95b77a322eb93447b31e366ae7e9f7343cf3ca3b9eed743a79cbfca2c432a4ab10e9156c1ec41e5f70cfb036b0192d5e9eb498df733d3eeefa21438b164da982b5cbb13fa38236979de9e1405baa64adcbd359edc9672eedcc17b2364159fcd9af31a0621c62d0c120c4cf29ab700adf5f31b4a3f7c94814183e13f0820fa4fad0396",
+          "created": 1549977017,
+          "jti": "068e8a9e-78f5-47d7-b255-e5bfff11ac88"
+        }
+
+### Refresh Token [POST]
+To refresh a token you need to send a POST request to the oauth endpoint with the refresh token received in the response when generating a bearer token. 
+All requests have to be signed with an Authorization generated by a valid ClientID and ClientSecret in the Header:
+```
+Authorization: Basic U3dhZ3dsciByb2Nrcw== 
+```
+Where `U3dhZ3dsciByb2Nrcw==` is Base64 encoding of ClientID and ClientSecret
+`base64encoded(ClientID:ClientSecret)`
++ Request (application/x-www-form-urlencoded)
+
+    + Body 
+        
+        grant_type=refresh_token&refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiI1MWI1MGI5YWE5MDJmMjVkOTA5OTA1ZDExNTY5YjNiNzc1MzU0NmQ5YWJhZDY4MDVjNDJmN2I0OTM1NDA3NzJiOTQzYzE4MmQ4ZmUxZGVhMjZlY2NiZWU4ZDgzODZhYWExYWQwNTA4NDM5ZWNkZDcwYjIwNWY5YzliZWUxNWQ0MDI3OWM3NDA1ZDA0OTUzYTczNjJjMzdiY2JhM2Y4OTBkOTA2Njg3ZTM3MGRhNDk1MWI1YzhmNDYxMTc2MTMzZDRhYjg1MWI1Y2FmZThlYWMwYjBiNmViOTM1MmE4NDllOTAyZGNkMWMwYWI4ODQ3NzVmZTBhNTk1MjZhMjdkODE5NjhiNDhjZWRmNTVlNDAzNTQ2ODBjOGE5ODkxMTMxNGUzODlhMTZkNmRiYmMwODA0MDkwYjE0MGM4MTM5NmYwYzk3MmIxNDAwMzBlMjVhMDdlN2E2OWY5OWFiNjRjN2UyODBjMWU1N2U5ZTc5YzY3NTAyNzhkNTFkMjljYWYxNGNlNjE3MjUzMjljYTk0YjlkZGZhZTIyMmQ3NGMwMTUwOSIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ4ODQyOTE0LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6ImQxNDgyMTNhLTgzMDctNDNkMi04NGM3LTdhZWEzNDRmZjMxNyIsImV4cCI6MTU0OTQ0NzcxNCwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijk2NjBhM2Q2LTY4OGItNGI1YS04MzQ2LWM4OGU5ZmY1ODAwNyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.ZULaTx8NajqFb0xI1L77LDCGPvC6-IasQNZl8L1tNZs
+            
+
++ Response 200 (application/json)
+
+        {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs",
+          "token_type": "bearer",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImV4cCI6MTU1MDU4MTgxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc1ZDhlMjg2LTJmMDMtNDM4NS04MDhiLTkyMGUyMDZhMDdjMyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.CLb7wcUqd0YnTbSwaR99KLZiYkvOj_JRuU6D-_EmIYo",
+          "expires_in": 899,
+          "scope": "read",
+          "tduser": "3af6022d9ff466715109f59d6b78024b24705cdbc4a42d8910ca6fdb0a7dd71982d47a5407ac541a02d7394f2d1fb982554ab4c5a69022474a0d734693fc2a3083a2430dc28958d262d98fb90ac95b77a322eb93447b31e366ae7e9f7343cf3ca3b9eed743a79cbfca2c432a4ab10e9156c1ec41e5f70cfb036b0192d5e9eb498df733d3eeefa21438b164da982b5cbb13fa38236979de9e1405baa64adcbd359edc9672eedcc17b2364159fcd9af31a0621c62d0c120c4cf29ab700adf5f31b4a3f7c94814183e13f0820fa4fad0396",
+          "created": 1549977017,
+          "jti": "068e8a9e-78f5-47d7-b255-e5bfff11ac88"
+        }
+ 
+   
+# Group Users
+Users have access to the Agency Organization and have four roles available: Owner, Admin, Write, Read. An Agency Organization always has one user with the role owner. This service allows the creation and management of users for the Agency Organization.
+
+## My User [/usermanagement/users/me]
+A User is an individual logon account connected to an Agency organization. 
+
+### Get My User Details [GET]
+
+Get details related to current logged in user. This is available for any role.
+
++ Request
+
+    + Headers
+    
+                Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+    + Attributes (object)
+            + logonAccountId: 1234567 (number) - Logon ID of the user 
+            + username: user123 - username for login
+            + firstName: A
+            + lastName: User
+            + email: user@tradedoubler.com - user's email address
+            + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+            + languageId: `en` - 2 Character language code of user (ISO 639-1)
+            + organizationId: 1234567 (number)  - Organization ID of the Agency the user belongs to
+            + owningOrganizationId: 0 (number) - When the Agency is within a private network, the ID of the private network organization
+
+    + Body
+    
+            {
+                "logonAccountId": 12345,
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 2,
+                "organizationId": 1234567,
+                "owningOrganizationId": 0,
+                "languageId": "en"
+            } 
+
+### Update My User Information [PUT]
+Update details related to current logged in user. This is available for any role.
+
++ Request (application/json)
+
+    + Attributes (object)
+            + username: user123 - username for login
+            + firstName: A
+            + lastName: User
+            + email: user@tradedoubler.com - user's email address
+            + languageId: `en` - 2 Character language code of user (ISO 639-1)
+            
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+    
+            {
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "languageId": "en"
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "logonAccountId": 12345,
+            "username": "testuser",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en"
+        } 
+        
+
+## Users [/usermanagement/users]
+
+### List Users [GET]
+Provides a list of all users connected to the Agency Organization. This is only available for the user with the role Owner.
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+    + Body    
+    
+            [
+                {
+                "logonAccountId": 2389158,
+                "username": "user1",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 1
+                },
+                {
+                "logonAccountId": 23252,
+                "username": "user2",
+                "firstName": "Test",
+                "lastName": "User2",
+                "email": "test2@tradedoubler.com",
+                "roleId": 2
+                }
+            ]
+
+### Create a user [POST]
+Create a new user for an Agency Organization.
+        
++ Request (application/json)
+
+    + Attributes (object)
+            + username: user123 - username for login
+            + firstName: A
+            + lastName: User
+            + email: user@tradedoubler.com - user's email address
+            + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+            + password: aUn1queP@ssword - user's password
+            + languageId: `en` - 2 Character language code of user (ISO 639-1)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+    
+            {
+                "username": "test3",
+                "firstName": "Test",
+                "lastName": "User3",
+                "email": "test3@tradedoubler.com",
+                "roleId": 3,
+                "password": "aUn1queP@ssword",
+                "languageId": "en"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234568,
+            "username": "test3",
+            "firstName": "Test",
+            "lastName": "User3",
+            "email": "test3@tradedoubler.com",
+            "roleId": 3,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en"
+        }
+
+## User By Id [/usermanagement/users/{logonAccountId}]
+
+### Get a specific User [GET]
+Provides information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "logonAcccountId": 1234567,
+                "username": "test",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 1,
+                "organizationId": 1234567,
+                "owningOrganizationId": 0,
+                "languageId": "en"
+            }   
+
+### Update a user [PUT]
+Update information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Attributes (object)
+    
+            + username: user123 - username for login
+            + firstName: A
+            + lastName: User
+            + email: user@tradedoubler.com - user's email address
+            + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+            + languageId: `en` - 2 Character language code of user (ISO 639-1)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+
+            {
+                "username": "test_change",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test3@tradedoubler.com",
+                "roleId": 2,
+                "languageId": "en"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234567,
+            "username": "test_change",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en"
+        }
+
+### Delete a user [DELETE]
+Delete a user a specific user based on their logonAcccountId, this will remove their access to login or access any Agency Organization information. This is only available for the user with the role Owner.
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+    
+        {
+            "response": "User successfully deleted"
+        }
+
+## Group Password 
+
+## Change Password [PUT /usermanagement/users/me/password]
+Change the password of logged in user
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]   
+            
+    + Body
+            
+            {
+                "currentPassword": "0!dP@ssword",
+                "newPassword": "N3wP@ssword"
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "response": "Password successfully changed"
+        }
+
+# Group Organizations
+Each Advertiser you work with has an Organization, against this Organization exists Advertiser user accounts, Programs and Events. 
+Once you have created an Advertiser Organization you can impersonate any of their users in order to access all Advertiser endpoints found in: 
+[Advertiser API Documentation](https://advertiserwip.docs.apiary.io/)!
+
+If any Advertiser Organizations are missing from your Agency API account please reach out to you Tradedoubler Account Manager who will assist you in making these available within your account. 
+## List All Organizations mapped to an agency [/agency/organizations]
+
+### Organizations [GET]
+You can view a list of Advertiser Organizations mapped to your agency account. You can retrieve the username of the Advertiser owner and 
+[impersonate](#reference/organizations/impersonation/impersonate) the user, this will allow you to use [Advertiser API endpoints](https://advertiserwip.docs.apiary.io/).
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + organizationId: 123456 (number) - Id of the organization
+        + organizationName: An Organization - Name of the Advertiser Organization
+        + username: advertiser_user - Username of the Advertiser Owner
+
+    + Body
+    
+            [
+                {
+                   "total": 2,
+                   "offset": 0,
+                   "limit": 20,
+                   "items": [
+                      {
+                          "organizationId": 123456,
+                          "organizationName": "An Organization",
+                          "username": "advertiser_user1"
+                      },
+                      {
+                         "organizationId": 654321,
+                          "organizationName": "Another Organization",
+                          "username": "advertiser_user2"
+                      }
+                   ]
+                }
+            ]
+
+### Create an Organization [POST]
+You can create a new Organization for your advertiser.
++ Request (application/json)
+
+        {
+            "email":"TestAdvertiserAgency3@gmail.com",
+            "password": "Testpass1",
+            "firstName":"advertiser first name 31staug",
+            "lastName":"advertiser lastName",
+            "languageCode":"en",
+            "telephone":"12345",
+            "companyName":"test company",
+            "orgTypeId":1,
+            "websiteUrl":"https://abc.com",
+            "companyRegistrationNumber":"1233",
+            "vatNumber":"SE898899899",
+            "primaryAddress":{
+                "street":"street test",
+                "street2":"street test 2",
+                "postCode": 16931,
+                "city":"Stockholm",
+                "county":"Stockholm",
+                "countryCode":"SE"
+            },
+            "tdOrganizationId":51
+        }
+
++ Response 200 (application/json)
+
+        {
+            "message": "Advertiser has been created successfully"
+        }
+        
+## Users on your mapped Organizations [/agency/organizations/users]
+
+### List users [GET]
+You can view all users on your Advertiser Organizations. Using the username you can impersonate to access all 
+[Advertiser API endpoints](https://advertiserwip.docs.apiary.io/)
+    
++ Response 200 (application/json)
+
+        [
+            {
+               "logonAccountId": 123456,
+               "username": "advertiser_user1",
+               "firstName": "Advertiser",
+               "lastName": "User 1",
+               "email": "user1@advertiser.com",
+               "roleId": 1,
+               "personId": 12345,
+               "organizationId": 1111
+            },
+            {
+               "logonAccountId": 654321,
+               "username": "advertiser_user2",
+               "firstName": "Advertiser",
+               "lastName": "User 2",
+               "email": "user2@advertiser.com",
+               "roleId": 2,
+               "personId": 65432,
+               "organizationId": 1111
+            }
+         ]
+
+## Impersonation [/uaa/admin/impersonate]
+To access Management and Reporting services for your advertisers you need to impersonate one of their users to gain the relevant role.
+
+### Impersonate [GET]
+In the impersonate endpoint you need to supply a username of a user for the Advertiser Organization. 
+The endpoint returns a bearer token which should be passed in the header of all requests in the [Advertiser APIs](https://advertiserwip.docs.apiary.io/).
+
+Note, any changes made to the Advertiser Organization and related objects (programs, ads, commission etc...) are assigned in our logs as a change by your agency user rather than the impersonated user. 
+You will also see in the below response the field "impersonatedBy" which corresponds to your user.
+    
++ Parameters
+    + username: advertiser_user1 (string) - The username of the user you want to impersonate
+
++ Request
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+    
+            {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs",
+                "token_type": "bearer",
+                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImV4cCI6MTU1MDU4MTgxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc1ZDhlMjg2LTJmMDMtNDM4NS04MDhiLTkyMGUyMDZhMDdjMyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.CLb7wcUqd0YnTbSwaR99KLZiYkvOj_JRuU6D-_EmIYo",
+                "expires_in": 899,
+                "tduser": "3af6022d9ff466715109f59d6b78024b24705cdbc4a42d8910ca6fdb0a7dd71982d47a5407ac541a02d7394f2d1fb982554ab4c5a69022474a0d734693fc2a3083a2430dc28958d262d98fb90ac95b77a322eb93447b31e366ae7e9f7343cf3ca3b9eed743a79cbfca2c432a4ab10e9156c1ec41e5f70cfb036b0192d5e9eb498df733d3eeefa21438b164da982b5cbb13fa38236979de9e1405baa64adcbd359edc9672eedcc17b2364159fcd9af31a0621c62d0c120c4cf29ab700adf5f31b4a3f7c94814183e13f0820fa4fad0396",
+                "created": 1549977017,
+                "impersonatedBy": "agency_user",
+                "jti": "068e8a9e-78f5-47d7-b255-e5bfff11ac88"
+            }
+ 

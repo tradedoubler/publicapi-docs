@@ -1,0 +1,3015 @@
+FORMAT: 1A
+HOST: https://connect.tradedoubler.com
+
+# Tradedoubler Publisher Management API
+
+This is the API documentation for Tradedoubler's Publisher platform. 
+At Tradedoubler we expose all features available in our web UI through the API. If you spot any incorrect information please refer to the contact details below.
+
+Changelog
+=========
+2021-07-30
+----------
+Endpoints changed in this release:
++ GET /transactions
++ GET /transactions/export
+
+### Transactions
+We have included an optional lastModified: When enabled, this applies the date range to the date the transaction was last modified rather than the time the of transaction.
+
+### Transactions export
+We have included an optional lastModified: When enabled, this applies the date range to the date the transaction was last modified rather than the time the of transaction.
+
+
+2021-02-01
+----------
+Endpoints changed in this release:
++ GET /users/countries
+
+### Countries
+We have added if a country has been enabled or not in the list available countries endpoint for publishers, this makes it easier to add more countries to work with in your account.
+
+
+2020-12-15
+----------
+Endpoints changed in this release:
++ GET /account
++ PUT /payment/settings
++ GET /programs/details
++ POST /users
++ PUT /users/{logonAccountId}
++ GET /users/{logonAccountId}
++ GET /users/me
+
+### Account
+We have added a new field brandedTracking. This specifies if your publisher account is on a Private Network that uses branded tracking links and not tradedoubler.com links.
+
+### Payment Settings
+We have fixed validation for Norwegian identification numbers
+
+### Program Details
+We have fixed an error message which incorrectly stated a source cannot apply to a program when trying to view details of a secret program that your source is connected to but has the status ended
+
+### Users
+Updated users documentation to include support for limiting user country access
+
+2020-12-01
+----------
+Endpoints changed in this release:
++ GET /transactions
++ GET /transactions/export
+
+### Transactions
+We have included an optional query parameter: paymentId which allows to filter sales for a specific payment. We also include paymentId in the response.
+
+### Transactions export
+We have included an optional query parameter: paymentId which allows to filter sales for a specific payment. We also include paymentId in the response.
+
+### New endpoint transaction by paymentId
+We have added a new endpoint which will return all transactions belonging to a publisher payment. 
+See: 
+[Transaction by Payment Id](#/reference/reporting/transaction/list-transaction-by-payment) 
+and [Export Transaction by Payment Id](#/reference/reporting/transaction/export-payment-transactions)
+
+2020-09-21
+----------
+Endpoints changed in this release:
++ GET /ads 
++ PUT /payment
+
+### Ads
+*BLOCKING CHANGE*
+
+We have changed the adType field in  GET /ads from string (the adType name) to long (the adType Id) to mirror the naming convention in Advertiser /ads APIs.
+This is a blocking change and you will need to update your application to handle this change in field type.
+See [Ads for the response](#/reference/ads/list-all-ads)
+
+### Payment
+
+#### SE Personal Number
+For Swedish individual publishers paid by Tradedoubler we require the individual's Personal Number to validate payments. Prevously there was a bug when the year of the date of birth in the personal number was YYYY. This bug has been fixed.
+
+#### IBAN for Domestic Payments
+We have changed the validation logic so IBAN can be used for domestic payments for publishers paid by Tradedoubler. If the publisher is in Sweden the bankAccountType should be IBAN
+
+
+Authentication
+==============
+Authentication against the API is handled by [oAuth 2.0](https://oauth.net/2/) using bearer tokens. Once you have authentication using the oauth endpoint, all requests require a bearer token sent via the `Authorization` header as per the following format:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs
+```
+
+You will need a valid Client ID and Secret code before you can use the API. 
+You will need to retrieve this through the [Tradedoubler Publisher UI](https://publishers.tradedoubler.com/account/clients).
+For more information see [oAuth Section](#/reference/o-auth-2-0)
+
+Response Formats
+================
+The reponse format for all API requests is JSON. All requests should therefore contain the following header:
+```
+Content-Type: application/json
+```
+
+Rate Limiting
+================
+To ensure system stability we apply limits to the number of API requests allowed by API Clients. This is limited to 60 requests per minute. If you exceed this you will receive the a HTTP 429 Too Many Requests Status Error with the response body: 
+```
+API rate limit exceeded
+```
+Please wait another minute and you will be able to make API requests again.
+
+Paging
+======
+To handle large results and to optimise performance of our API we use paginatation on a number of our endpoints to reduce the size of results returned to the client. All endpoints supporting pagination will return 2 attributes:
+- offset
+- limit
+
+To page through the results you need to supply two fields within the body of your GET request:
+
+|Paramater|Description|Details|
+|:--------|-----------|-------|
+offset|Offset the results by a specified amount|Integer, default is 0|
+limit|Limit the number of results to be returned|Integer, default is 20, maxmium limit is 100 unless specified
+
+For example: 
+- If the limit is default at 20 and an endpoint produces 100 results, only the first 20 will be returned (results 0 to 19). 
+- In order to retrieve the remaining results, use the offset parameter. In this example, adding offset=20 to the query string parameters.
+- Results begin at offset 0. If you're retrieving a report with limit=20, page 2 will begin at offset=20, page 3 at offset=40, page 4 at offset=60, etc.
+
+Roles
+========
+Publisher users can be given one of four roles. This determines which endpoints they can access.
+
+User Management
+---------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/users/me/password/reset|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/users|&#10004;|||
+POST|/users|&#10004;|||
+GET|/users/{logonAccountId}|&#10004;|||
+PUT|/users/{logonAccountId}|&#10004;|||
+DELETE|/users/{logonAccountId}|&#10004;|||
+GET|/users/countries|&#10004;|||
+POST|/users/countries|&#10004;|||
+
+Account Management
+------------------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/account|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/account|&#10004;|||
+DELETE|/account|&#10004;|||
+GET|/account/options|&#10004;|&#10004;||
+GET|/ads|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/sources|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/sources|&#10004;|&#10004;|&#10004;|
+GET|/sources/{sourceId}|&#10004;|&#10004;|&#10004;|&#10004;
+PUT|/sources/{sourceId}|&#10004;|&#10004;|&#10004;|
+DELETE|/sources/{sourceId}|&#10004;|&#10004;|&#10004;|
+GET|/sources/options/countries|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/sources/options/languages|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/sources/options/promotiontypes|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/sources/options/sourcetypes|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/programs|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/programs/detail|&#10004;|&#10004;|&#10004;|&#10004;
+POST|/programs/apply|&#10004;|&#10004;|&#10004;|
+GET|/tokens|&#10004;|&#10004;|&#10004;|
+POST|/tokens|&#10004;|&#10004;||
+GET|/payment/settings|&#10004;|||
+PUT|/payment/settings|&#10004;|||
+GET|/payment/providers|&#10004;|||
+GET|/payment/settings/fields/tradedoubler|&#10004;|||
+GET|/payment/settings/fields/payoneer|&#10004;|||
+
+Reporting
+---------
+|Method|URL|Owner|Admin|Member|Read-only|
+|:-----|---|-----|-----|-----|----|
+GET|/statistics|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/statistics/export|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions/export|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions/payments|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/transactions/export/payments|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard/programs|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/dashboard/sources|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/payments|&#10004;|&#10004;||
+GET|/payments/{paymentId}|&#10004;|&#10004;||
+GET|/payments/earnings|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/payments/accountBalanceBreakdown|&#10004;|&#10004;|&#10004;|&#10004;
+GET|/payments/pendingEarningsBreakdown|&#10004;|&#10004;|&#10004;|&#10004;
+
+
+# Group oAuth 2.0
+
+## Bearer and Refresh Token [/uaa/oauth/token]
+Tradedoubler APIs use oAuth2 authentification with refreshTokens.
+All requests must be validated with a bearerToken in the header request.
+
+Only use oAuth2 credentials when you don't already have a refresh token!
+
+### Client Credentials
+
+To use our APIs you will need to create a client which provides a ClientId and ClientSecret. 
+The client is required to generate a bearer token which is used on all subsequent API requests to validate your account and role. 
+This is created in the Publisher UI: https://publishers.tradedoubler.com/account/clients
+
+Your clientSecret is only shown once when you create a new client. 
+If you do not know your clientSecret you must delete and recreate the client in the [Publisher UI](https://publishers.tradedoubler.com/account/clients)!
+
+
+![ClientPage](http://hst.tradedoubler.com/file/47446/ClientPage.jpg)
+
+### Bearer token [POST]
+To generate a bearer token you need to send a POST request to the oauth endpoint with your username and password. 
+All requests have to be signed with an Authorization generated by a valid ClientID and ClientSecret in the Header:
+```
+Authorization: Basic U3dhZ3dsciByb2Nrcw== 
+```
+Where `U3dhZ3dsciByb2Nrcw==` is Base64 encoding of ClientID and ClientSecret (seperated by a colon and no whitespaces)
+`base64encoded(ClientID:ClientSecret)`
++ Request (application/x-www-form-urlencoded)
+    + Headers
+
+            Authorization: Basic U3dhZ3dsciByb2Nrcw==
+            
+    + Body
+        
+            grant_type=password&username=YOURUSERNAME&password=YOURPASSWORD
+        
+
++ Response 200 (application/json)
+
+        {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs",
+          "token_type": "bearer",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImV4cCI6MTU1MDU4MTgxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc1ZDhlMjg2LTJmMDMtNDM4NS04MDhiLTkyMGUyMDZhMDdjMyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.CLb7wcUqd0YnTbSwaR99KLZiYkvOj_JRuU6D-_EmIYo",
+          "expires_in": 899,
+          "scope": "read",
+          "tduser": "3af6022d9ff466715109f59d6b78024b24705cdbc4a42d8910ca6fdb0a7dd71982d47a5407ac541a02d7394f2d1fb982554ab4c5a69022474a0d734693fc2a3083a2430dc28958d262d98fb90ac95b77a322eb93447b31e366ae7e9f7343cf3ca3b9eed743a79cbfca2c432a4ab10e9156c1ec41e5f70cfb036b0192d5e9eb498df733d3eeefa21438b164da982b5cbb13fa38236979de9e1405baa64adcbd359edc9672eedcc17b2364159fcd9af31a0621c62d0c120c4cf29ab700adf5f31b4a3f7c94814183e13f0820fa4fad0396",
+          "created": 1549977017,
+          "jti": "068e8a9e-78f5-47d7-b255-e5bfff11ac88"
+        }
+
+### Refresh Token [POST]
+To refresh a token you need to send a POST request to the oauth endpoint with the refresh token received in the response when generating a bearer token. 
+All requests have to be signed with an Authorization generated by a valid ClientID and ClientSecret in the Header:
+```
+Authorization: Basic U3dhZ3dsciByb2Nrcw== 
+```
+Where `U3dhZ3dsciByb2Nrcw==` is Base64 encoding of ClientID and ClientSecret (seperated by a colon and no whitespaces)
+`base64encoded(ClientID:ClientSecret)`
++ Request (application/x-www-form-urlencoded)
+    + Headers
+
+            Authorization: Basic U3dhZ3dsciByb2Nrcw==
+    
+    + Body            
+        
+            grant_type=refresh_token&refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiI1MWI1MGI5YWE5MDJmMjVkOTA5OTA1ZDExNTY5YjNiNzc1MzU0NmQ5YWJhZDY4MDVjNDJmN2I0OTM1NDA3NzJiOTQzYzE4MmQ4ZmUxZGVhMjZlY2NiZWU4ZDgzODZhYWExYWQwNTA4NDM5ZWNkZDcwYjIwNWY5YzliZWUxNWQ0MDI3OWM3NDA1ZDA0OTUzYTczNjJjMzdiY2JhM2Y4OTBkOTA2Njg3ZTM3MGRhNDk1MWI1YzhmNDYxMTc2MTMzZDRhYjg1MWI1Y2FmZThlYWMwYjBiNmViOTM1MmE4NDllOTAyZGNkMWMwYWI4ODQ3NzVmZTBhNTk1MjZhMjdkODE5NjhiNDhjZWRmNTVlNDAzNTQ2ODBjOGE5ODkxMTMxNGUzODlhMTZkNmRiYmMwODA0MDkwYjE0MGM4MTM5NmYwYzk3MmIxNDAwMzBlMjVhMDdlN2E2OWY5OWFiNjRjN2UyODBjMWU1N2U5ZTc5YzY3NTAyNzhkNTFkMjljYWYxNGNlNjE3MjUzMjljYTk0YjlkZGZhZTIyMmQ3NGMwMTUwOSIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ4ODQyOTE0LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6ImQxNDgyMTNhLTgzMDctNDNkMi04NGM3LTdhZWEzNDRmZjMxNyIsImV4cCI6MTU0OTQ0NzcxNCwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijk2NjBhM2Q2LTY4OGItNGI1YS04MzQ2LWM4OGU5ZmY1ODAwNyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.ZULaTx8NajqFb0xI1L77LDCGPvC6-IasQNZl8L1tNZs
+        
+
++ Response 200 (application/json)
+
+        {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImV4cCI6MTU0OTk3NzkxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.cN_ose-fMtxGbVN27Yg2Sotc4zz4oLLVkyZHvCvj0zs",
+          "token_type": "bearer",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZHVzZXIiOiIzYWY2MDIyZDlmZjQ2NjcxNTEwOWY1OWQ2Yjc4MDI0YjI0NzA1Y2RiYzRhNDJkODkxMGNhNmZkYjBhN2RkNzE5ODJkNDdhNTQwN2FjNTQxYTAyZDczOTRmMmQxZmI5ODI1NTRhYjRjNWE2OTAyMjQ3NGEwZDczNDY5M2ZjMmEzMDgzYTI0MzBkYzI4OTU4ZDI2MmQ5OGZiOTBhYzk1Yjc3YTMyMmViOTM0NDdiMzFlMzY2YWU3ZTlmNzM0M2NmM2NhM2I5ZWVkNzQzYTc5Y2JmY2EyYzQzMmE0YWIxMGU5MTU2YzFlYzQxZTVmNzBjZmIwMzZiMDE5MmQ1ZTllYjQ5OGRmNzMzZDNlZWVmYTIxNDM4YjE2NGRhOTgyYjVjYmIxM2ZhMzgyMzY5NzlkZTllMTQwNWJhYTY0YWRjYmQzNTllZGM5NjcyZWVkY2MxN2IyMzY0MTU5ZmNkOWFmMzFhMDYyMWM2MmQwYzEyMGM0Y2YyOWFiNzAwYWRmNWYzMWI0YTNmN2M5NDgxNDE4M2UxM2YwODIwZmE0ZmFkMDM5NiIsInVzZXJfbmFtZSI6InVrQHRyYWRlZG91Ymxlci5jb20iLCJjcmVhdGVkIjoxNTQ5OTc3MDE3LCJzY29wZSI6WyJyZWFkIl0sImF0aSI6IjA2OGU4YTllLTc4ZjUtNDdkNy1iMjU1LWU1YmZmZjExYWM4OCIsImV4cCI6MTU1MDU4MTgxNywiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc1ZDhlMjg2LTJmMDMtNDM4NS04MDhiLTkyMGUyMDZhMDdjMyIsImNsaWVudF9pZCI6InRkY29ubmVjdF9wdWJsaXNoZXIifQ.CLb7wcUqd0YnTbSwaR99KLZiYkvOj_JRuU6D-_EmIYo",
+          "expires_in": 899,
+          "scope": "read",
+          "tduser": "3af6022d9ff466715109f59d6b78024b24705cdbc4a42d8910ca6fdb0a7dd71982d47a5407ac541a02d7394f2d1fb982554ab4c5a69022474a0d734693fc2a3083a2430dc28958d262d98fb90ac95b77a322eb93447b31e366ae7e9f7343cf3ca3b9eed743a79cbfca2c432a4ab10e9156c1ec41e5f70cfb036b0192d5e9eb498df733d3eeefa21438b164da982b5cbb13fa38236979de9e1405baa64adcbd359edc9672eedcc17b2364159fcd9af31a0621c62d0c120c4cf29ab700adf5f31b4a3f7c94814183e13f0820fa4fad0396",
+          "created": 1549977017,
+          "jti": "068e8a9e-78f5-47d7-b255-e5bfff11ac88"
+        }
+ 
+   
+# Group Users
+Users have access to Publisher Organization and have four roles available: Owner, Admin, Write, Read. A Publisher Organization always has one user with the role owner. This service allows the creation and management of users for the Publisher Organization.
+
+## My User [/usermanagement/users/me]
+A User is an individual logon account connected to a Publisher organization. 
+
+### Get My User Details [GET]
+
+Get details related to current logged in user. This is available for any role.
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + logonAccountId: 1234567 (number) - Logon ID of the user 
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + organizationId: 1234567 (number)  - Organization ID of the Publisher the user belongs to
+        + owningOrganizationId: 0 (number) - When Publisher is in a private network, the ID of the private network organization
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+        + typeId: 1 (number) - User type, if a publisher or advertiser. Publisher typeId is always 1
+        + personId: 123456 (number) - Person ID of the user
+
+ + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Body
+
+            {
+                "logonAccountId": 12345,
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 2,
+                "organizationId": 1234567,
+                "owningOrganizationId": 0,
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y",
+                "typeId": 1,
+                "personId": 123456
+            } 
+
+### Update My User Information [PUT]
+
+Update details related to current logged in user. This is available for any role.
+
++ Request (application/json)
+
+    + Attributes (object)
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+    
+    + Body
+
+            {
+                "username": "testuser",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "languageId": "en"
+            }
+
++ Response 200 (application/json)
+    
+        {
+            "logonAccountId": 12345,
+            "username": "testuser",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 1,
+            "personId": 123456
+        } 
+        
+
+## Users [/usermanagement/users]
+
+### List Users [GET]
+Provides a list of all users connected to the Publisher Organization. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "logonAccountId": 2389158,
+                "username": "user1",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test@tradedoubler.com",
+                "roleId": 1,
+                "personId": 123456
+            },
+            {
+                "logonAccountId": 23252,
+                "username": "user2",
+                "firstName": "Test",
+                "lastName": "User2",
+                "email": "test2@tradedoubler.com",
+                "roleId": 2,
+                "personId": 123457
+            }
+        ]
+
+### Create a user [POST]
+Create a new user for a Publisher Organization.
+        
++ Request (application/json)
+
+    + Attributes (object)
+        + username: `user123` - username for login
+        + firstName: `A`
+        + lastName: `User`
+        + email: `user@tradedoubler.com` - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + password: `aUn1queP@ssword` - user's password
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+        
+    + Body
+    
+            {
+                "username": "test3",
+                "firstName": "Test",
+                "lastName": "User3",
+                "email": "test3@tradedoubler.com",
+                "roleId": 3,
+                "password": "aUn1queP@ssword",
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234568,
+            "username": "test3",
+            "firstName": "Test",
+            "lastName": "User3",
+            "email": "test3@tradedoubler.com",
+            "roleId": 3,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 1,
+            "personId": 123456
+        }
+
+## User By Id [/usermanagement/users/{logonAccountId}]
+
+### Get a specific User [GET]
+Provides information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Attributes (object)
+        + logonAccountId: 1234567 (number) - Logon ID of the user 
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + organizationId: 1234567 (number)  - Organization ID of the Publisher the user belongs to
+        + owningOrganizationId: 0 (number) - When Publisher is in a private network, the ID of the private network organization
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+        + typeId: 1 (number) - User type, if a publisher or advertiser. Publisher typeId is always 1
+        + personId: 123456 (number) - Person ID of the user
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234567,
+            "username": "test",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 1,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en"
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 1,
+            "personId": 123456
+        }  
+
+### Update a user [PUT]
+Update information for a specific user based on their logonAcccountId. This is only available for the user with the role Owner.
+
++ Request (application/json)
+
+    + Attributes (object)
+        + username: user123 - username for login
+        + firstName: A
+        + lastName: User
+        + email: user@tradedoubler.com - user's email address
+        + roleId: 1 (number) - Role ID of user, 1 = Owner, 2 = Admin, 3 = Member, 4 = Read-only
+        + languageId: `en` - 2 Character language code of user (ISO 639-1)
+        + countryAccess: ["GB","FR"] (array) - array of countries the user should have access to. Countries should be ISO_3166-1 Alpha-2
+        + newsletter: `Y` - Y or N if the user should receive newsletters from Tradedoubler
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Body
+
+            {
+                "username": "test_change",
+                "firstName": "Test",
+                "lastName": "User",
+                "email": "test3@tradedoubler.com",
+                "roleId": 2,
+                "languageId": "en",
+                "countryAccess": ["GB","FR"],
+                "newsletter": "Y"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "logonAcccountId": 1234567,
+            "username": "test_change",
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@tradedoubler.com",
+            "roleId": 2,
+            "organizationId": 1234567,
+            "owningOrganizationId": 0,
+            "languageId": "en",
+            "countryAccess": ["GB","FR"],
+            "newsletter": "Y",
+            "typeId": 1,
+            "personId": 123456
+        }
+
+### Delete a user [DELETE]
+Delete a user a specific user based on their logonAcccountId, this will remove their access to login or access any Publisher Organization information. This is only available for the user with the role Owner.
+
++ Response 200 (application/json)
+    
+        {
+            "response": "User successfully deleted"
+        }
+
+## Group Password 
+
+## Change Password [PUT /usermanagement/users/me/password]
+Change the password of logged in user
++ Request (application/json)
+    
+        {
+            "currentPassword": "0!dP@ssword",
+            "newPassword": "N3wP@ssword"
+        }
+
++ Response 200 (application/json)
+    
+        {
+            "response": "Password successfully changed"
+        }
+
+
+# Group Account
+Provides the Account information for the Publisher Organization a user is connected to. 
+
+## Account Information [/publisher/account]
+
+### Get Account Information [GET]
+View account information for the Publisher Organization. This is only available for users with the role Owner or Admin. 
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + organization (object)
+        + id: 1234567 (number) - Publisher Organization ID
+        + name: Tradedoubler - Publisher Organization Name
+        + phone: "+46 84050800" - Phone number, must include country code
+        + phone2: "+46 84050800" - Optional additional phone number, must include country code
+        + logoUrl: https://www.tradedoubler.com/logo.jpg - URL of your logo
+        + description: About us - Add a description about your business
+        + address (object)
+        + street: Floor 7 - 1st line of address
+        + street2: 57A Birger Jarlsgatan - Optional field for 2nd line of address
+        + zipCode: 113 56 - Zip or postal code
+        + city: Stockholm - City
+        + countryCode: SE - ISO-3166 Alpha 2 country code
+        + county: Stockholm - Optional county name   
+        + preferences (object)
+        + currencyCode: SEK - ISO-4217 currency code
+        + referencePerson: (object)
+        + personId: 123456 (number)
+        + firstName: Test
+        + lastName: Test
+
+    + Body
+    
+            {
+                "organization": {
+                    "id": 1,
+                    "name": "Tradedoubler",
+                    "phone": "+46 84050800",
+                    "phone2": "",
+                    "logoUrl": "https://www.tradedoubler.com/logo.jpg",
+                    "description": "About us",
+                    "address": {
+                        "street": "57A Birger Jarlsgatan",
+                        "street2": "",
+                        "zipCode": "113 56",
+                        "city": "Stockholm",
+                        "countryCode": "SE",
+                        "county": ""
+                    }
+                },           
+                {"preferences": {
+                        "currencyCode": "EUR"
+                    }
+                },
+                 {"referencePerson": {
+                    "personId": 111,
+                    "firstName": "Test",
+                    "lastName": "Test"
+                    }
+                }
+            }
+
+
+### Update Account Information [PUT]
+Update the Publisher Organization account information. Only users with the role Owner can change this.
++ Request (application/json)
+
+    + Attributes (object)
+        + organization (object)
+        + id: 1234567 (number) - Publisher Organization ID
+        + name: Tradedoubler - Publisher Organization Name
+        + phone: "+46 84050800" - Phone number, must include country code
+        + phone2: "+46 84050800" - Optional additional phone number, must include country code
+        + logoUrl: https://www.tradedoubler.com/logo.jpg - URL of your logo
+        + description: About us - Add a description about your business
+        + address (object)
+        + street: Floor 7 - 1st line of address
+        + street2: 57A Birger Jarlsgatan - Optional field for 2nd line of address
+        + zipCode: 113 56 - Zip or postal code
+        + city: Stockholm - City
+        + countryCode: SE - ISO-3166 Alpha 2 country code
+        + county: Stockholm - Optional county name  
+        + preferences: (object)
+        + currencyCode: SEK - ISO-4217 currency code
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Body
+    
+            {
+                "organization": {
+                    "name": "Tradedoubler",
+                    "phone": "+46 84050800",
+                    "phone2": "+46 84050800",
+                    "logoUrl": "https://www.tradedoubler.com/logo.jpg",
+                    "description": "About us",
+                    "address": {
+                        "street": "Floor 7",
+                        "street2": "57A Birger Jarlsgatan",
+                        "zipCode": "113 56",
+                        "city": "Stockholm",
+                        "countryCode": "SE",
+                        "county": "Stockholm"
+                    }
+                },
+                "preferences": {
+                    "currencyCode":"SEK"
+                }
+            
+            }
+
++ Response 200 (application/json)
+
+        {            
+            "organization": {
+                "name": "Tradedoubler",
+                "phone": "+46 84050800",
+                "phone2": "+46 84050800",
+                "logoUrl": "https://www.tradedoubler.com/logo.jpg",
+                "description": "About us",
+                "address": {
+                    "street": "Floor 7",
+                    "street2": "57A Birger Jarlsgatan",
+                    "zipCode": "113 56",
+                    "city": "Stockholm",
+                    "countryCode": "SE",
+                    "county": "Stockholm"
+                }
+            },
+            {"referencePerson": {
+                "personId": 111,
+                "firstName": "Test",
+                "lastName": "Test"
+            },
+            {"preferences": {
+                    "newsletter": "NONE",
+                    "currencyCode": "EUR"
+                }
+            }
+        }
+        
+
+### Delete Account [DELETE]
+Delete the Publisher Organization and all connected users. Only an Owner can use this service.
+
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+
+        {
+        "password": "existingPassword"
+        }
+        
++ Response 200 (application/json)
+
+        {
+        "message": "Account has been deleted"
+        }
+        
+## Account Options [GET /publisher/account/options]
+Provides all available options for the Publisher Organization Account. This is useful for any updates.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+        
+        {
+            "countries": [
+                {
+                    "code": "PR",
+                    "name": "Puerto Rico"
+                },
+                {
+                    "code": "PT",
+                    "name": "Portugal"
+                }
+            ],
+            "currencies": [
+                {
+                    "code": "XOF",
+                    "name": "CFA Franc BCEAO"
+                },
+                {
+                    "code": "XPF",
+                    "name": "CFP Franc"
+                }
+            ],
+            "locales": [
+                {
+                    "code": "nl",
+                    "name": "Dutch"
+                },
+                {
+                    "code": "no",
+                    "name": "Norwegian"
+                }
+            ]
+        }
+
+## Active Countries [/usermanagement/users/countries]
+
+### Get Available Countries [GET]
+Returns a list of all available countries in Tradedoubler's network (or a private network) that a publisher can operate in
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+        
+        [
+            {
+                "code": "AU",
+                "name": "Australia",
+                "enabled": false
+            },
+            {
+                "code": "BE",
+                "name": "Belgium",
+                "enabled": true
+            }
+        ]
+
+### Add Additional Countries [POST]
+Allows the publisher to work in additional countries
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+
+        {
+            "countries": "AU,BE"
+        }
+        
++ Response 200 (application/json)
+
+        [
+            {
+                "code": "AU",
+                "name": "Australia"
+            },
+            {
+                "code": "BE",
+                "name": "Belgium"
+            }
+        ]
+        
+# Group Ads 
+
+## List All Ads [/publisher/ads]
+
+### Ads [GET]
+You can view a list of available ads either across all programs you are connected to or filtered by a number of options:
+
++ Parameters
+    + sourceId: 1234567 (long) - Filter available ads based on the ID of a specific source/website
+    + programId: 123456 (long) - Filter available ads for specific programs
+    + adType: 4 (enum(long), optional) - Filter available ads based on the type
+        + Members
+            + `1: Text`
+            + `4: Image`
+            + `6: HTML`
+    + adSize: 300x250 (string, optional) - Filter available ads based on the Size. This is a free text search, to search for width use "300x" and for height only "x250"
+    + adName (string, optional) - Filter available ads based on the Name
+    + adId: 12345678 (long, optional) - Filter for a specific ad
+    + categoryIds: 11,13,16 (string, optional) - Filter available ads based on program categories
+        + Members
+            + `1: Gaming`
+            + `2: Finance`
+            + `3: Educations & Careers`
+            + `4: Insurance`
+            + `5: Health & Beauty`
+            + `6: Social & Dating`
+            + `7: Fashion`
+            + `8: Telecoms & Utilities`
+            + `9: Sports & Recreation`
+            + `10: Computers & Electronics`
+            + `11: Travel`
+            + `12: Business To Business`
+            + `13: Media & Entertainment`
+            + `14: Home & Garden`
+            + `15: Non Profit Organizations`
+            + `16: Shopping & Retail`
+            + `17: Food & Drink`
+            + `18: Alcohol & Tobacco`
+            + `19: Automotive`
+            
+    + statusId: 0,1,3 (string, optional) - Filter available ads based on programs your connection status
+        + Members
+            + `0: Not Applied`
+            + `1: Under Consideration`
+            + `2: On-hold while under consideration`
+            + `3: Accepted`
+            + `4: Ended`
+            + `5: Denied`
+            + `6: On Hold while Accepted`
+            + `7: Final Denied`
+            + `8: Written Off`
+    + sortBy: lastUpdated (string, optional)
+        + Members
+            + `lastUpdated`
+            + `createDate`
+            + `avgEpc`
+            + `programName`
+            + `adName`
+            + `adType`
+            + `adSize`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+               "offset": 0,
+               "limit": 20,
+               "items": [
+                  {
+                      "programId": 318210,
+                      "programName": "Test GB",
+                      "adId": 23709816,
+                      "adName": "Logo_Test_selection",
+                      "adSize": "100x100",
+                      "programCategories": [9, 11, 12],
+                      "lastUpdate": "2017-01-18T15:49:27.000+0000",
+                      "createdDate": "2017-01-17T23:00:00.000+0000",
+                      "avgEpc": 51.30,
+                      "adType": 4,
+                      "url": "http://test.tradedoubler.com/file/30539/18.01.17_logo/selection-100x100.jpg",
+                      "productUrl": null,
+                      "customHtml": " ",
+                      "text": null,
+                      "showPerformance": true
+                  },
+                  {
+                      "programId": 318210,
+                      "programName": "Test GB",
+                      "adId": 24312236,
+                      "adName": "advance saver offer_468x60",
+                      "adSize": "468x60",
+                      "programCategories": [9, 11, 12],
+                      "lastUpdate": "2018-06-13T06:48:45.000+0000",
+                      "createdDate": "2018-06-12T22:00:00.000+0000",
+                      "avgEpc": 78.70,
+                      "adType": 1,
+                      "url": "http://",
+                      "productUrl": "https://www.test.com/gb/promotions-offers/early-booking-offers/ALL-ALL",
+                      "customHtml": " ",
+                      "text": "landing page generic ",
+                      "showPerformance": true
+                  }
+               ]
+            }
+        ]
+
+# Group Programs 
+
+## Program [/publisher/programs]
+### List Programs [GET]
+You can view a list of available programs:
+
++ Parameters
+    + sourceId: 1234567 (long) - Filter available programs based on the ID of a specific source/website
+    + statusId: 0,1,3 (string, optional) - Filter available programs based on your connection status
+        + Members
+            + `0: Not Applied`
+            + `1: Under Consideration`
+            + `2: On-hold while under consideration`
+            + `3: Accepted`
+            + `4: Ended`
+            + `5: Denied`
+            + `6: On Hold while Accepted`
+            + `7: Final Denied`
+            + `8: Written Off`
+    + name: Test program (string, optional) - Filter available programs based on the Name
+    + categoryIds: 11,13,16 (string, optional) - Filter available ads based on program categories
+        + Members
+            + `1: Gaming`
+            + `2: Finance`
+            + `3: Educations & Careers`
+            + `4: Insurance`
+            + `5: Health & Beauty`
+            + `6: Social & Dating`
+            + `7: Fashion`
+            + `8: Telecoms & Utilities`
+            + `9: Sports & Recreation`
+            + `10: Computers & Electronics`
+            + `11: Travel`
+            + `12: Business To Business`
+            + `13: Media & Entertainment`
+            + `14: Home & Garden`
+            + `15: Non Profit Organizations`
+            + `16: Shopping & Retail`
+            + `17: Food & Drink`
+            + `18: Alcohol & Tobacco`
+            + `19: Automotive`
+            
+    
+    + sortBy: id (string, optional)
+        + Members
+            + `id`
+            + `statusId`
+            + `name`
+    + sortOrder: asc (string, optional)
+        + Members
+            + `asc`
+            + `desc`
+    + offset: 0 (integer, optional)
+        + Default: 0
+    + limit: 20 (integer, optional)
+        + Default: 20
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "limit": 20,
+                "offset": 0,
+                "items": [
+                    {
+                        "id": 123,
+                        "name": "Name_123",
+                        "countryCode": "GB",
+                        "closedProgram": false,
+                        "paused": false,
+                        "categoryIds": [
+                            10,
+                            12,
+                            16
+                        ],
+                        "logoUrl": "https://logourl",
+                        "prepayment": false,
+                        "createdDate": "2016-04-25T13:27:17.000+0000",
+                        "startDate": "2016-05-25T13:27:17.000+0000",
+                        "statusId": 3,
+                        "avgEpc": 0,
+                        "avgPaymentDays": 26,
+                        "avgCancellationRate": 0.01,
+                        "productFeed": true,
+                        "keywordPolicyId": 2,
+                        "implementationTypeId": 1,
+                        "autoAccept": true,
+                        "daysToAutoAccept": 0,
+                        "applicationDate": "2012-04-25T12:53:07.000+0000",
+                        "updatedDate": "2012-04-25T12:53:07.000+0000",
+                        "cpc": false,
+                        "cpuv": false,
+                        "cpl": true,
+                        "cpa": true,
+                        "showPerformance": true,
+                        "acceptClaims": true,
+                        "currencyCode": "GBP",
+                        "homePage": "https://www.tradedoubler.com",
+                        "deepLinking": true
+                    },
+                    {
+                        "id": 321,
+                        "name": "Name_321",
+                        "countryId": "GB",
+                        "closedProgram": false,
+                        "paused": false,
+                        "categoryIds": [
+                            7,
+                            14,
+                            16
+                        ],
+                        "logoUrl": "http://logoUrl",
+                        "prepayment": false,
+                        "createdDate": "2016-04-25T13:27:17.000+0000",
+                        "startDate": "2016-05-25T13:27:17.000+0000",
+                        "statusId": 0,
+                        "avgEpc": 0,
+                        "avgPaymentDays": 28,
+                        "avgCancellationRate": 0.02,
+                        "productFeed": true,
+                        "keywordPolicyId": 2,
+                        "implementationTypeId": 1,
+                        "autoAccept": false,
+                        "daysToAutoAccept": 3,
+                        "applicationDate": "2012-04-25T12:53:07.000+0000",
+                        "updatedDate": "2012-04-25T12:53:07.000+0000",
+                        "cpc": false,
+                        "cpuv": false,
+                        "cpl": true,
+                        "cpa": true,
+                        "showPerformance": true,
+                        "acceptClaims": true,
+                        "currencyCode": "GBP",
+                        "homePage": "https://www.tradedoubler.com",
+                        "deepLinking": true
+                    }
+                ]
+            }
+        ]
+
+
+### Program Detail [GET /publisher/programs/detail]
+You can view detailed information on a specific programs:
++ Parameters
+    + sourceId: 1234567 (long) - Filter available programs based on the ID of a specific source/website
+    + programId: 123456 (long) - Filter available programs based on your connection status
+        
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + id: 123456 - unique Id for the program
+        + defaultTracking: https://clk.tradedoubler.com/click?p=123456&a=654321 - default tracking link
+        + name: Program Name - Name of the program
+        + countryCode: GB - country code of the program
+        + closedProgram: true - if the program is a closed program, then it is invite only, publishers can not apply via the interface
+        + paused: false - if the program is in a paused state then no statistics will show until it is unpaused. Contact your Tradedoubler Account Manager to request a program is no longer paused.
+        + categoryIds: (array[number]) - The Ids of categories the program has been mapped to. See parameters for more information
+            + 1 - Gaming
+            + 2 - Finance
+            + 3 - Educations & Careers
+            + 4 - Insurance
+            + 5 - Health & Beauty
+            + 6 - Social & Dating
+            + 7 - Fashion
+            + 8 - Telecoms & Utilities
+            + 9 - Sports & Recreation
+            + 10 - Computers & Electronics
+            + 11 - Travel
+            + 12 - Business To Business
+            + 13 - Media & Entertainment
+            + 14 - Home & Garden
+            + 15 - Non Profit Organizations
+            + 16 - Shopping & Retail
+            + 17 - Food & Drink
+            + 18 - Alcohol & Tobacco
+            + 19 - Automotive
+        + logoUrl: https://www.tradedoubler.com/logo.gif - the url for the program's logo
+        + prepayment: false - if the program is prepayment then the advertiser is invoiced in advance, this allows publishers to be paid much quicker. Otherwise advertisers are invoiced on a monthly basis.
+        + createdDate: `2009-08-21` - the date the program was created
+        + startDate: `2009-08-21` - the date the program went live
+        + statusId: - the program connection status for your source
+            + 0 (number) - Not applied
+            + 1 (number) - Under consideration
+            + 3 (number) - Accepted
+            + 4 (number) - Ended
+            + 5 (number) - Denied
+        + productFeed: true - if the program has a connected product feed
+        + avgEpc: 0 - average earnings per click
+        + keywordPolicyId: - The Keyword Policy for Publishers using paid search
+            + 0 (number) - No keyword policy
+            + 1 (number) - Open policy
+            + 2 (number) - Restricted 
+            + 3 (number) - Closed
+        + implementationTypeId:  - The type of tracking setup for the program
+            + 1 (number) - Click tracking program only
+            + 2 (number) -  on-site conversion tracking, 3rd party cookie setup
+            + 3 (number) - on-site conversion tracking, 1st party cookie setup
+            + 4 (number) - offline tracking, 3rd party setup
+            + 5 (number) - offline conversion tracking
+            + 6 (number) - 1st party setup, 6-Unknown
+        + autoAccept - false - if the program auto accepts applications
+        + daysToAutoAccept - the maximum time an application will be under consideration before being auto accepted
+        + texts (object) - advertiser information for the program. textTypeId indicates the type of program text
+            + 2 (number) - Program Description
+            + 3 (number) - Program Short Description
+            + 34 (number) - Program specific Terms and conditions
+            + 46 (number) - If the program does not have an open keyword policy this contains restricted keyword policy info
+        + responsibleDetails - contact details of the relevant Tradedoubler Account Manager
+        + showPerformance - if false, performance criteria such as avgEpc are not shown
+        + acceptClaims - if the program allows publishers to submit untracked sales claims
+        + currencyCode: GBP - the currency the program is set to track in
+        + deepLinking: true - if the program allows publishers to deeplink to product pages
+        + segmentTariffs: (object) - an object containing a list of all commissions applicable for the program
+        + pltSegmentTariff (object) - if the program supports Product Level Tracking, a list of all product groups and commissions
+        + pltSegmentPromotions (array) - if the program supports Product Level Tracking, a list of all product level promotions and commissions
+
+
+    + body
+    
+        [
+            {
+            "id": 123456,
+            "defaultTracker": "https://clk.tradedoubler.com/click?p=123456&a=654321",
+            "name": "Program Name",
+            "countryCode": "GB",
+            "closedProgram": true,
+            "paused": false,
+            "categoryIds": [
+                    10,
+                    12,
+                    16
+                ],
+            "logoUrl": "http://www.tradedoubler.com/logo.gif",
+            "prepayment": false,
+            "createdDate": "2016-04-25T13:27:17.000+0000",
+            "startDate": "2016-05-25T13:27:17.000+0000",
+            "statusId": 0,
+            "productFeed": false,
+            "avgEpc": 0,
+            "keywordPolicyId": 2,
+            "implementationTypeId": 1,
+            "autoAccept": false,
+            "daysToAutoAccept": 3,
+            "texts": [
+                {
+                    "languageCode": "en",
+                    "textTypeId": 3,
+                    "text": "Some Text"
+                }
+            ],
+            "responsibleDetails": {
+                    "name": "Sven Svensson",
+                    "email": "svensson.sven@tradedoubler.com",
+                    "phone": "0"
+                },
+            "showPerformance": true,
+            "acceptClaims": true,
+            "currencyCode": "GBP",
+            "homePage": "https://www.tradedoubler.com",
+            "deepLinking": true,
+            "segmentTariffs": [
+                {
+                    "id": 1,
+                    "name": "General",
+                    "tariffs": [
+                        {
+                            "eventName": "Transaction Inquiry",
+                            "fixedFee": 0,
+                            "percentageFee": 100
+                        },
+                        {
+                            "eventName": "Transaction Adjustment",
+                            "fixedFee": 0,
+                            "percentageFee": 100
+                        }
+                    ]
+                }
+            ],
+            "pltSegmentTariffs": [
+                {
+                    "id": 1,
+                    "name": "General",
+                    "tariffs": [
+                        {
+                            "productGroupId": 12345,
+                            "productGroupName": "Electronics"
+                            "saleFixed": 0.0,
+                            "salePercentage": 2.0,
+                            "isaleFixed": 0.0,
+                            "isalePercentage": 0.0
+                        }
+                    ]
+                }
+            ],
+            "pltPromotions" : []
+        }
+        ]
+    
+### Apply to program [POST /publisher/programs/apply]
+
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    
+    + Attributes (object)
+        + sourceId: 1234567 (number) -  
+        + programId: 123456 (number) -
+
+    + Body
+
+        {
+            "sourceId": "1234567",
+            "programId": "123456"
+        }
+
+
++ Response 200 (application/json)
+
+        [
+            {
+                "sourceId": "1234567",
+                "programId": "123456"
+            }
+        ]
+# Group Sources
+
+A source is website or app that generates traffic
+## Source [/publisher/sources]
+
+### List sources [GET]
+You can view a list of available programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+        {
+          "id": 123456,
+          "name": "Tradedoubler",
+          "url": "http://www.tradedoubler.com",
+          "countryCode": "GB",
+          "promotionTypeId": 1,
+          "description": "Tradedoubler Affiliate Source ",
+          "sourceStatus": "ACTIVE"
+         },
+         {
+          "id": 654321,
+          "name": "Tradedoubler - another source",
+          "url": "http://www.tradedoubler.se",
+          "countryCode": "SE",
+          "promotionTypeId": 8,
+          "description": "Another Tradedoubler affiliate source",
+          "sourceStatus": "ACTIVE"
+         }
+        ]
+
+
+## Create a source [POST]
+
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
+    + Attributes
+        + name: Tradedoubler - Name of your source
+        + url: https://www.tradedoubler.com - URL for your website or link to your app in app store
+        + countryCode: SE - ISO-3166 Alpha 2 country code
+        + promotionTypeId: 1 (number) - See [Promotion Type](/#/reference/sources/source-options/get-available-promotion-types-for-sources/)
+        + description: Tradedoubler default source - A description used to identify the traffic source
+        + sourceTypeId: 1 (number) - See [Source type](/#/reference/sources/source-options/get-available-types-for-sources/)
+        
+    + Body
+    
+        {
+            "name": "Tradedoubler",
+            "url": "https://www.tradedoubler.com",
+            "countryCode": "SE",
+            "promotionTypeId": 1,
+            "description": "TradeDoubler affiliate source",
+            trafficSizeId": 2,
+            "categories": [
+            4,
+            215,
+            217
+            ],
+            "sourceTypeIds": [
+                1
+            ]
+        }
+
++ Response 200 (application/json)
+
+        {
+            "id": 123456,
+            "name": "Tradedoubler",
+            "url": "http://www.tradedoubler.com",
+            "countryCode": "GB",
+            "promotionTypeId": 1,
+            "description": "TradeDoubler affiliate source",
+            "sourceStatus": "INACTIVE",
+            "trafficSizeId": 2,
+            "categories": [
+            4,
+            215,
+            217
+            ],
+            "sourceTypeIds": [
+                1
+            ]
+        }
+
+## Source by ID [/publisher/sources/{sourceId}]
+
+### Get a source [GET]
+You can view detailed information on a specific programs:
+
++ Parameters
+    + sourceId: 1234567 (long) - Filter available programs based on the ID of a specific source/website
+            
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+
++ Response 200 (application/json)
+
+        {
+            "id": 123456,
+            "name": "Tradedoubler",
+            "url": "http://www.tradedoubler.com",
+            "countryCode": "GB",
+            "promotionTypeId": 1,
+            "description": "TradeDoubler affiliate source",
+            "sourceStatus": "INACTIVE",
+            "trafficSizeId": 2,
+            "categories": [
+            4,
+            215,
+            217
+            ],
+            "sourceTypeIds": [
+                1
+            ]
+        }
+    
+### Update a source [PUT]
+
+You can view detailed information on a specific programs:
++ Parameters
+    + sourceId: 1234567 (long) - Filter available programs based on the ID of a specific source/website
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+    
+    + Body
+
+        {
+            "name": "TradeDoubler",
+            "url": "http://www.tradedoubler.com",
+            "countryCode": "GB",
+            "promotionTypeId": 1,
+            "description": "TradeDoubler test account2",
+            "trafficSizeId": 2,
+            "categories": [
+            4,
+            215
+            ],
+            "sourceTypeIds": [
+                1
+            ]
+        }
+    
++ Response 200 (application/json)
+
+        {
+            "id": 358774,
+            "name": "TradeDoubler",
+            "url": "http://www.tradedoubler.com",
+            "countryCode": "GB",
+            "promotionTypeId": 1,
+            "description": "TradeDoubler test account2",
+            "sourceStatus": "ACTIVE",
+            "trafficSizeId": 2,
+            "categories": [
+                4,
+                215
+            ],
+            "sourceTypeIds": [
+                1
+            ]
+        }
+
+### Delete a source [DELETE]
+You can view detailed information on a specific programs:
++ Parameters
+    + sourceId: 1234567 (long) - The ID of the source/website to delete
+        
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "message": "Source has been deleted"
+        }
+
+## Source Options [/publisher/sources/options]
+
+### Get available countries for sources [GET /publisher/sources/options/countries]
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {  
+            "countries": [
+                {
+                  "code": "UA",
+                  "name": "Ukraine"
+                },
+                {
+                   "code": "SE",
+                   "name": "Sweden"
+                }
+            ]
+        }
+
+### Get available languages for sources [GET /publisher/sources/options/languages]
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {  
+            "locales": [
+                {
+                  "code": "en",
+                  "name": "English"
+                },
+                {
+                   "code": "sv",
+                   "name": "Swedish"
+                }
+            ]
+        }
+    
+### Get available promotion types for sources [GET /publisher/sources/options/promotiontypes]
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+        {  
+            "types": [
+                {
+                  "id": "212",
+                  "name": "Price comparison"
+                },
+                {
+                   "code": "232",
+                   "name": "Search"
+                }
+            ]
+        }
+    
+### Get available types for sources [GET /publisher/sources/options/sourcetypes]
+You can view detailed information on a specific programs:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {  
+            "types": [
+                {
+                  "id": "1",
+                  "name": "DESKTOP"
+                },
+                {
+                   "id": "2",
+                   "name": "MOBILE"
+                }
+            ]
+        }
+    
+# Group Tokens
+## Publisher Tokens [/publisher/tokens]
+Tokens are required to use Tradedoubler's older API services: Products, Vouchers, Claims and Conversions. Documentation found at: https://dev.tradedoubler.com
+Publisher tokens work for all sources. Site tokens work only for the specified source ID.
+
+### List tokens [GET]
+You can view a list of available tokens:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+           "tokenSystems":[
+              "VOUCHERS",
+              "UTS"
+           ],
+           "tokens":[
+              {
+                 "id":121,
+                 "name":"test@test.com",
+                 "token":"D0AAAAA4BBBBB84B7CF",
+                 "tokenType":"PUBLISHER",
+                 "tokenSystem":"VOUCHERS"
+              },
+              {
+                 "id":111,
+                 "name":"TradeDoubler",
+                 "token":"CDDDDD3OO7E111111BD13B",
+                 "tokenType":"SITE",
+                 "tokenSystem":"VOUCHERS"
+              },
+              {
+                 "id":333,
+                 "name":"TradeDoubler",
+                 "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                 "tokenType":"PUBLISHER",
+                 "tokenSystem":"UTS"
+              }
+           ]
+        }
+
+### Refresh a token [POST]
+
+You can refresh your token should you require:
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+        
+    + Body
+
+        {
+            "id": 123,
+            "tokenType": "SITE",
+            "tokenSystem": "PRODUCTS"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "id": 123,
+            "name": "!Test",
+            "token": "6A6F17C2AD40E7E076",
+            "tokenType": "SITE",
+            "tokenSystem": "PRODUCTS"
+        }
+    
+# Group Payment Settings
+Publishers are required to choose how they will be paid and enter their payment details. Currently Tradedoubler has two payment providers: Tradedoubler are able to support SEPA (Single Euro Payment Area) which covers most European counties. For any partners outside of SEPA please sign up to our partner Payoneer
+
+## Payment Settings [/publisher/payment/settings]
+## Current Payment Settings [GET]
+Gets the current payment provider for the Publisher Organization and all related payment settings
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+        {
+            "providerId":1,
+            "bankCountryCode": "GB",
+            "taxResidenceCountryCode": "GB",
+            "businessType": "COMPANY",
+            "bankAccountNumber": "12345678",
+            "bankAccountOwner": "Mr. Publisher",
+            "sortCode": "00-00-00",
+            "iban": "GB0000000000000000000",
+            "companyRegistrationNumber": "12345670000",
+            "swift": "ABCEGB2XXX",
+            "vatCountry": "GB",
+            "vatNo": "GB123456789"
+        }
+
+## Change Payment Settings [PUT]
+To change the payment settings 
+- when changing payment provider to Tradedoubler see #reference/payment-settings/Tradedoubler-fields to see which fields are required. This will also change based on the company type and country based (for example in Sweden where personal number is required for certain business types)
+- when changing payment provider to Payoneer see #reference/payment-settings/Payoneer-fields for required fields
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
+    + Body
+
+        {
+            "providerId":1,
+            "bankCountryCode": "GB",
+            "taxResidenceCountryCode": "GB",
+            "businessType": "COMPANY",
+            "bankAccountNumber": "12345678",
+            "bankAccountOwner": "Mr. Publisher",
+            "sortCode": "00-00-00",
+            "iban": "GB0000000000000000000",
+            "companyRegistrationNumber": "12345670000",
+            "swift": "ABCEGB2XXX",
+            "vatCountry": "GB",
+            "vatNo": "GB123456789"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "providerId":1,
+            "bankCountryCode": "GB",
+            "taxResidenceCountryCode": "GB",
+            "businessType": "COMPANY",
+            "bankAccountNumber": "12345678",
+            "bankAccountOwner": "Mr. Publisher",
+            "sortCode": "00-00-00",
+            "iban": "GB0000000000000000000",
+            "companyRegistrationNumber": "12345670000",
+            "swift": "ABCEGB2XXX",
+            "vatCountry": "GB",
+            "vatNo": "GB123456789"
+        }
+        
+
+## Available Providers [/publisher/payment/settings/providers]
+
+### Available payment providers [GET]
+List of available payment providers - currently Tradedoubler for SEPA and Payoneer for rest of the world
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+        {
+            "providers": [
+                {
+                    "id": 1,
+                    "provider": "tradedoubler"
+                },
+                {
+                    "id": 2,
+                    "provider": "payoneer"
+                }
+            ]
+        }
+
+
+### Tradedoubler Fields [GET /publisher/payment/settings/fields/tradedoubler]
+List of fields that are required when updating payment provider to Tradedoubler. Fields required differ based on if the publisher organization is an company or individual or charitble organization.
++ Parameters
+    + businessTypeId: 3 (integer) - Unique ID for the business type (1 - individual, 2 - Non-taxable organization, 3 - VAT registered company)   
+    + bankCountryCode: `FR` (string) - Bank country code (ISO Alpha 2)
+    + accountType: `BANKGIRO` (string, optional) - mandatory only for Sweden ("bankCountryCode": "SE") where the value is either BANKACCOUNT, BANKGIRO or IBAN
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "fieldName": "bankAccountOwner",
+                "mandatory": true
+            },
+            {
+                "fieldName": "iban",
+                "mandatory": true
+            },
+            {
+                "fieldName": "socialSecurityNumber",
+                "mandatory": true
+            },
+            {
+                "fieldName": "swift",
+                "mandatory": true
+            },
+            {
+                "fieldName": "vatCountry",
+                "mandatory": false
+            },
+            {
+                "fieldName": "vatNo",
+                "mandatory": false
+            },
+            {
+                "fieldName": "bankCountryCode",
+                "mandatory": true
+            },
+            {
+                "fieldName": "businessTypeId",
+                "mandatory": true
+            },
+            {
+                "fieldName": "taxResidenceCountryCode",
+                "mandatory": true
+            }
+        ]
+
+### Payoneer Fields [GET /publisher/payment/settings/fields/payoneer]
++ Parameters
+    + businessTypeId: 3 (integer) - Unique ID for the business type (1 - individual, 2 - Non-taxable organization, 3 - VAT registered company)   
+    + bankCountryCode: `FR` (string) - Bank country code (ISO Alpha 2)
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+    
++ Response 200 (application/json)
+
+        [
+            {
+                "fieldName": "vatCountry",
+                "mandatory": false
+            },
+            {
+                "fieldName": "vatNo",
+                "mandatory": false
+            },
+            {
+                "fieldName": "bankCountryCode",
+                "mandatory": true
+            },
+            {
+                "fieldName": "businessTypeId",
+                "mandatory": true
+            },
+            {
+                "fieldName": "taxResidenceCountryCode",
+                "mandatory": true
+            }
+        ]
+
+
+# Group Reporting
+## Statistics [/publisher/report/statistics]
+Statistics is the main reporting endpoint. This reflects a lot of work to simplify Tradedoubler's reports from the old publisher interface into a single endpoint with the ability to change how the statistics are grouped. 
+### Statistics [GET]
+Detailed statistics for publisher, they can be grouped by date, source, program, ad or EPI (Enhanced Publisher Information). To see clicks at EPI level speak to your publisher manager.
++ Parameters
+    + intervalType: year (enum(string)) - Interval Grouping. 
+        + Members
+            + `day`
+            + `month`
+            + `year`
+            + `period`
+    + reportType: date (enum(string)) - Report Type Grouping
+        + Members
+            + `source` - Test info
+            + `program`
+            + `ad`
+            + `date`
+            + `epi`        
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until
+    + sourceId: 1234567 (long, optional) - Filter by a source ID
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "offset": 0,
+            "limit": 2,
+            "reportCurrencyCode": "GBP",
+            "items": [{
+                    "impressions": 0,
+                    "clicks": 1,
+                    "uniqueVisitors": 1,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-01T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }, {
+                    "impressions": 0,
+                    "clicks": 8,
+                    "uniqueVisitors": 4,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-02T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }
+            ]
+        }
+
+### Export [GET /publisher/report/statistics/export]
+Export summary statistics into another reporting format - for analysis in tools such as Excel
++ Parameters
+    + format: json (enum(string)) - Format of the export file
+        + Members
+            + `json`
+            + `csv`
+            + `xlsx`
+            + `xml`
+    + intervalType: year (enum(string)) - Interval Grouping. 
+        + Members
+            + `day`
+            + `month`
+            + `year`
+            + `period`
+    + reportType: date (enum(string)) - Report Type Grouping
+        + Members
+            + `source` - Test info
+            + `program`
+            + `ad`
+            + `date`
+            + `epi`        
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until
+    + sourceId: 1234567 (long, optional) - Filter by a source ID
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "reportCurrencyCode": "GBP",
+            "items": [{
+                    "impressions": 0,
+                    "clicks": 1,
+                    "uniqueVisitors": 1,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-01T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }, {
+                    "impressions": 0,
+                    "clicks": 8,
+                    "uniqueVisitors": 4,
+                    "leads": 0,
+                    "leadsCommission": 0.00,
+                    "iLeads": 0,
+                    "iLeadsCommission": 0.00,
+                    "sales": 0,
+                    "salesCommission": 0.00,
+                    "iSales": 0,
+                    "iSalesCommission": 0.00,
+                    "commission": 0.00,
+                    "orderValue": 0.00,
+                    "date": "2017-09-02T00:00:00.000+0000",
+                    "ctr": 0.00,
+                    "cr": 0.00,
+                    "lr": 0.00,
+                    "epc": 0.00,
+                    "programId": 123,
+                    "programName": "A Program",
+                    "programCountryCode": "GB",
+                    "deposit": 0.00,
+                    "withdraw": 0.00
+                }
+            ]
+        }
+
+## Transaction [/publisher/report/transactions]
+Transactions relate to sales or leads and give detailed information
+### List transaction [GET]
+List of transactions for a given source        
+
++ Parameters
+    + sourceId: 1234567 (integer, optional) - Source ID. Currently we only allow transactions report to be run for one Source at a time.      
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until    
+    + lastModified: true (boolean, optional) - Apply date range to timeofLastModification
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + epi1: Placeholder (string, optional) - Filter for transactions containing free text in EPI field (Enhanced Publisher Information)
+    + epi2: Placeholder2 (string, optional) - Filter for transactions containing free text in EPI2 field (Enhanced Publisher Information)
+    + orderOrLeadNumber: order1234 (string, optional) - Filter transactions by order or lead number
+    + paymentId: 1234567 (integer, optional) - Filter by paymentId
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + transactionId: 99999888901 (number) - Unique ID for each transaction
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database (for offline sales this can be some time after the time of transaction)
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed (usually when the status after an advertiser validates transactions)
+        + epi: `1234A` (string) - Enhanced Publisher Information (EPI) is a custom field for publishers to pass their own values (up to 64 bytes), this can be used for sub networks to pass their own internal IDs
+        + epi2: `ABC4321` (string) - Enhanced Publisher Information 2 (EPI2) is a second custom field for publishers to pass their own values (up to 64 bytes), this can be used for sub networks to pass their own internal IDs
+        + leadNumber: null (string) - When eventTypeId = 4 (transaction is a lead) the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 (transaction is a sale) the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 (transaction is a sale) the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+        + paymentId 1234567 (number) - If the transaction has been paid, the paymentId the transaction belongs to
+        
+    + Body
+            
+            {
+                "limit": 1,
+                "offset": 0,
+                "reportCurrencyCode": "EUR",
+                "items": [{
+                    "transactionId": 99999888901,
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": null,
+                        "operatingSystem": null,
+                        "browser": null
+                    },
+                    "paymentId": 1234567
+                }]
+            }
+
+### Export Transactions [GET /publisher/report/transactions/export]
+Export list of transactions for a given source
+
++ Parameters
+    + format: json (enum(string)) - Format of the export file
+        + Members
+            + `json`
+            + `csv`
+            + `xlsx`
+            + `xml`
+    + sourceId: 1234567 (integer, optional) - Source ID. Currently we only allow transactions report to be run for one Source at a time.      
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until    
+    + lastModified: true (boolean, optional) - Apply date range to timeofLastModification
+    + programId: 123456 (long, optional) - Filter by a program ID
+    + adId: 12345678 (long, optional) - Filter by an ad ID
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + epi1: Placeholder (string, optional) - Filter for transactions containing free text in EPI field (Enhanced Publisher Information)
+    + epi2: Placeholder2 (string, optional) - Filter for transactions containing free text in EPI2 field (Enhanced Publisher Information)
+    + orderOrLeadNumber: order1234 (string, optional) - Filter transactions by order or lead number
+    + paymentId: 1234567 (integer, optional) - Filter by paymentId
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+ 
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + transactionId: 99999888901 (number) - Unique ID for each transaction
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database. For offline sales this can be some time after the time of transaction
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed. This is usually when the status after an advertiser validates transactions
+        + epi: `1234A` (string) - Enhanced Publisher Information (EPI) is a custom field for publishers to pass their own values, up to 64 bytes, this can be used for sub networks to pass their own internal IDs
+        + epi2: `ABC4321` (string) - Enhanced Publisher Information 2 (EPI2) is a second custom field for publishers to pass their own values, up to 64 bytes, this can be used for sub networks to pass their own internal IDs
+        + leadNumber: null (string) - When eventTypeId = 4  the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+        + paymentId 1234567 (number) - If the transaction has been paid, the paymentId the transaction belongs to
+        
+    + Body
+            {
+                "items": [{
+                    "transactionId": 99999888901,
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": null,
+                        "operatingSystem": null,
+                        "browser": null
+                    },
+                    "paymentId": 1234567
+                }]
+            }
+
+### List transaction by Payment [GET /publisher/report/transactions/payments]
+List of transactions for a given Payment Id
+
++ Parameters
+    + paymentId: 1234567 (integer) - Filter by paymentId
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + sortBy: timeOfTransaction (enum(string), optional) - The field used to sort the results
+        + Members
+            + timeOfTransaction - default
+            + timeOfLastModified
+            + eventId
+            + programId
+            + epi
+            + epi2
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + transactionId: 99999888901 (number) - Unique ID for each transaction
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database (for offline sales this can be some time after the time of transaction)
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed (usually when the status after an advertiser validates transactions)
+        + epi: `1234A` (string) - Enhanced Publisher Information (EPI) is a custom field for publishers to pass their own values (up to 64 bytes), this can be used for sub networks to pass their own internal IDs
+        + epi2: `ABC4321` (string) - Enhanced Publisher Information 2 (EPI2) is a second custom field for publishers to pass their own values (up to 64 bytes), this can be used for sub networks to pass their own internal IDs
+        + leadNumber: null (string) - When eventTypeId = 4 (transaction is a lead) the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 (transaction is a sale) the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 (transaction is a sale) the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+        + paymentId 1234567 (number) - If the transaction has been paid, the paymentId the transaction belongs to
+        
+    + Body
+            
+            {
+                "limit": 1,
+                "offset": 0,
+                "reportCurrencyCode": "EUR",
+                "items": [{
+                    "transactionId": 99999888901,
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": null,
+                        "operatingSystem": null,
+                        "browser": null
+                    },
+                    "paymentId": 1234567
+                }]
+            }
+
+### Export Payment Transactions [GET /publisher/report/transactions/export/payments]
+Export list of transactions for a given payment Id
+
++ Parameters
+    + paymentId: 1234567 (integer) - Filter by paymentId
+    + format: json (enum(string)) - Format of the export file
+        + Members
+            + `json`
+            + `csv`
+            + `xlsx`
+            + `xml`
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    + sortBy: timeOfTransaction (enum(string), optional) - The field used to sort the results
+        + Members
+            + timeOfTransaction - default
+            + timeOfLastModified
+            + eventId
+            + programId
+            + epi
+            + epi2
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+ 
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + transactionId: 99999888901 (number) - Unique ID for each transaction
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transaction
+        + eventId: 123456 (number) - The event ID for the transaction
+        + eventName: `A Sale Event` (string) - The event name describes the transction that took place (this could be a subscription, product, or general sale)
+        + eventTypeId: 5 (number) - This donates the `type` of transaction, where 4 = Lead (a transaction with no monetary value like a registration) and 5 = Sale
+        + status: `A` (string) - For transactions with a pending period this is the current status, where A = Accepted, P = Pending and D = Denied
+        + timeofLastClick: `2019-02-18 19:07:59.0` (string) - The timestamp of the last click before the transaction was made
+        + timeofCreate: `2019-02-27 00:38:28.0` (string) - The timestamp of when the transaction was created in Tradedoubler's database. For offline sales this can be some time after the time of transaction
+        + timeofTransaction: `2019-02-26 23:17:56.0` (string) - The timestamp of when the transaction took place
+        + timeofLastModified: null (string) - The timestamp of when the transaction was last changed. This is usually when the status after an advertiser validates transactions
+        + epi: `1234A` (string) - Enhanced Publisher Information (EPI) is a custom field for publishers to pass their own values, up to 64 bytes, this can be used for sub networks to pass their own internal IDs
+        + epi2: `ABC4321` (string) - Enhanced Publisher Information 2 (EPI2) is a second custom field for publishers to pass their own values, up to 64 bytes, this can be used for sub networks to pass their own internal IDs
+        + leadNumber: null (string) - When eventTypeId = 4  the leadNumber for the transaction
+        + orderNumber: `order123` (string) - When eventTypeId = 5 the orderNumber for the transaction
+        + orderValue: 100.00 (number) - When eventTypeId = 5 the order value for the transaction
+        + commission: 10.00 (number) - The commission attributed to the source for the transaction
+        + paid: false - Whether the commission for the transaction has been assigned to a payment invoice and should have been paid to the publisher
+        + productInfo (object) - ProductInfo Object contains all products in the basket for the transaction if the adveriser supplies this data
+            + productID: `123A` (string) - The ID of an advertiser's product
+            + productName: `A Product` (string) - The name of an advertiser's product
+            + quantity: 1 (number) - The quantity of this product in the transaction basket
+            + productValue: 9.99 (number) - The price for a single product
+            + productGroup: 1234 (number) - When an advertiser is using Product Level Tracking, the group the product is assigned to
+        + voucherCode: `10PERCENT` (string) - The voucher code redeemed if it was used for the transaction
+        + productsApi (object)
+            + productId: `53292822e4b0961d498eb8d2`(string) - The ID of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+            + productName: `A Product`(string) - The name of a product from our Products API `http://dev.tradedoubler.com/products/publisher` that was clicked on before the transaction was made
+        + paymentId 1234567 (number) - If the transaction has been paid, the paymentId the transaction belongs to
+        
+    + Body
+            {
+                "items": [{
+                    "transactionId": 99999888901,
+                    "programId": 123456,
+                    "programName": "Program 1",
+                    "sourceName": "Source 1",
+                    "sourceId": 1233456,
+                    "eventId": 123456,
+                    "eventName": "A Sale Event",
+                    "eventTypeId": 5,
+                    "timeOfLastClick": "2019-02-18 19:07:59.0",
+                    "timeOfCreate": "2019-02-27 00:38:28.0",
+                    "timeOfTransaction": "2019-02-26 23:17:56.0",
+                    "timeOfLastModified": null,
+                    "epi": null,
+                    "epi2": null,
+                    "leadNumber": null,
+                    "orderNumber": "order123",
+                    "orderValue": 100.00,
+                    "commission": 0.00,
+                    "paid": false,
+                    "status": "A",
+                    "productInfo": {
+                        "productID": null,
+                        "productName": null,
+                        "quantity": null,
+                        "productValue": null,
+                        "productGroup": null
+                    },
+                    "voucherCode": null,
+                    "productsApi": {
+                        "productId": "53292822e4b0961d498eb8d2",
+                        "productName": "A Product"
+                    },
+                    "crossDevice": null,
+                    "pendingRule": null,
+                    "deviceObject": {
+                        "deviceType": null,
+                        "operatingSystem": null,
+                        "browser": null
+                    },
+                    "paymentId": 1234567
+                }]
+            }
+
+## Dashboard [/publisher/report/dashboard]
+Collection of summary reports
+### Summary statistics [GET]
+Summary statistics used for the dashboard within the publisher interface.
++ Parameters
+    + dateRange: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+            
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "impressions": 800,
+            "clicks": 0,
+            "uniqueVisitors": 0,
+            "leads": 0,
+            "iLeads": 0,
+            "sales": 0,
+            "salesOrderValue": 30.01,
+            "iSales": 0,
+            "commission": 1800.00,
+            "iSalesOrderValue": 0.00,
+            "reportCurrencyCode": "SEK",
+            "data":{
+                "impressions":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 133,
+                        "commission": 2.11
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 0,
+                        "commission": 0.00
+                    }
+                ]
+                "clicks":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 133,
+                        "commission": 33.21
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 231,
+                        "commission": 8.11
+                    }
+                ]
+                "leads":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 0,
+                        "commission": 0
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 231,
+                        "commission": 10.13
+                    }
+                ]
+                "sales":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 0,
+                        "commission": 0.00
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 231,
+                        "commission": 13.20
+                    }
+                ]
+                "orderValue":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 133.00
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 0.00
+                    }
+                ]
+                "commission":[
+                    {
+                        "date":"2017-02-10T00:00:00.000+0000",
+                        "value": 0.00
+                    },
+                    {
+                        "date":"2017-02-10T01:00:00.000+0000",
+                        "value": 231.01
+                    }
+                ]
+            }
+        }
+
+### Top performing programs [GET /publisher/report/dashboard/programs]
+Provides summary statistics sorted for top performing programs 
++ Parameters
+    + dateRange: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+    + sortBy: `publisherCommission` (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "reportCurrencyCode": "EUR",
+            "items": [
+                {
+                    "programName": "Program 1",
+                    "programId": 12345,
+                    "publisherCommission": 50000.00
+                },
+                {
+                    "programName": "Program 2",
+                    "programId": 54321,
+                    "publisherCommission": 10000.00
+                }
+            ]
+        }
+
+### Top performing sources [GET /publisher/report/dashboard/sources]
+Provides summary statistics sorted for top performing sources 
++ Parameters
+    + dateRange: `TODAY` (enum(string)) - Date range for the report
+        + Members
+            + `TODAY`
+            + `YESTERDAY`
+            + `LAST_7_DAYS`
+            + `LAST_WEEK`
+            + `CURRENT_WEEK`
+            + `LAST_30_DAYS`
+            + `LAST_MONTH`
+            + `CURRENT_MONTH`
+    + sortBy: `publisherCommission` (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "reportCurrencyCode": "EUR",
+            "items": [
+                {
+                    "sourceName": "Source 1",
+                    "sourceId": 1234567,
+                    "publisherCommission": 10000.00
+                },
+                {
+                    "sourceName": "Source 2",
+                    "sourceId": 7654321,
+                    "publisherCommission": 50000.00
+                }
+            ]
+        }
+
+## Payment [/publisher/report/payments]
+Reports related to payment and commission earned
+### List Payments [GET]
+Lists payments made to the publisher
++ Parameters
+    + fromDate: `20190101` (date) - The date the report runs from
+    + toDate: `20190201` (date) - The date the report runs until
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "paymentId": 123456,
+                "paymentDate": "2019-01-14T22:46:24.000+0000",
+                "currencyCode": "EUR",
+                "paymentAmount": 10000.00,
+                "paymentProvider": "Opus"
+            },
+            {
+                "paymentId": 123457,
+                "paymentDate": "2019-02-17T23:48:26.000+0000",
+                "currencyCode": "EUR",
+                "paymentAmount": 25000.00,
+                "paymentProvider": "Opus"
+            }
+        ]
+
+### Payment Detail [GET /publisher/report/payments/{paymentId}]   
+Get detailed information about a payment 
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+            
++ Response 200 (application/json)
+
+        {
+            "tdPayment": {
+                "tdOrganizationName": "TradeDoubler Sweden AB",
+                "address1": "Birger Jarlsg. 57 A",
+                "address2": null,
+                "city": "Stockholm",
+                "postcode": "SE-113 56",
+                "country": "SE",
+                "vatNumber": "SE12345678"
+                "swift": "XXXXXX"
+            },
+            "publisherPayment": {
+                "publisherId": 1234567,
+                "publisherName": "Publisher A",
+                "organizationNumber": "00000000",
+                "address1": "Address 1",
+                "address2": null,
+                "city": "London",
+                "postcode": "EC2M 2RB",
+                "country": "GB",
+                "vatNumber": "GB XXXXXX",
+                "invoiceNumber": null,
+                "paymentId": 1234567,
+                "paymentDate": "2018-01-14T14:15:36.000+0000"
+            },
+            "trafficPayments": [
+                {
+                    "sourceId": 1234567,
+                    "sourceName": "Source 1",
+                    "programId": 12345,
+                    "programName": "Program a",
+                    "transactionName": "Basket Sale",
+                    "paymentCurrencyCode": "EUR",
+                    "paymentAmount": 1000.00,
+                    "localCurrencyCode": "EUR",
+                    "localPaymentAmount": 1000.00
+                }
+            ],
+            "manualPayments": [],
+            "vatPayment": {
+                "currencyCode": "EUR",
+                "vatAmount": 1000.00,
+                "vatRate": 0.077
+            },
+            "roundingPayment": {
+                "currencyCode": "EUR",
+                "roundingAmount": 0.41
+            }
+        }
+
+### Account Balance Breakdown [GET /publisher/report/payments/accountBalanceBreakdown]
+Breakdown of earned commission by program and seperated into three objects:
+- amountReadyForPayment: commission that is ready to be paid on next payment date 
+- pendingEarnings: approved commission but not ready for payment 
+- unapprovedBalance:  commission in a pending state 
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "amountReadyForPayment": [
+               {
+                   "programId": 123456,
+                   "programName": "A Program - ES",
+                   "payableCurrency": {
+                       "currencyCode": "EUR",
+                       "amount": 45.00
+                   },
+                   "publisherCurrency": {
+                       "currencyCode": "SEK",
+                       "amount": 450.00
+                   }
+               },
+               {
+                   "programId": 123457,
+                   "programName": "Another Program",
+                   "payableCurrency": {
+                       "currencyCode": "EUR",
+                       "amount": 30.00
+                   },
+                   "publisherCurrency": {
+                       "currencyCode": "SEK",
+                       "amount": 300.00
+                   }
+               }
+            ],
+            "pendingEarnings": [
+                {
+                    "programId": 123467,
+                    "programName": "A Program - SE",
+                    "payableCurrency": {
+                        "currencyCode": "SEK",
+                        "amount": 999.00
+                    },
+                    "publisherCurrency": {
+                        "currencyCode": "SEK",
+                        "amount": 999.00
+                    }
+                }
+            ],
+            "unapprovedBalance": [
+                   {
+                       "programId": 12345,
+                       "programName": "A Program - DE",
+                       "payableCurrency": {
+                           "currencyCode": "EUR",
+                           "amount": 90
+                       },
+                       "publisherCurrency": {
+                           "currencyCode": "SEK",
+                           "amount": 900.00
+                       }
+                   }
+            ]
+        }
+
+### Pending Earnings Breakdown [GET /publisher/report/payments/pendingEarningsBreakdown]
+Breakdown of commission not approved for payment. This is split into two objects
+- amountReadyForPayment: commission that has been approved but is unable to be paid for other reasons such as:
+    - Empty bank details
+    - Network quality payment block
+    - Market minimum payment limit has not been reached
+- amountNotReadyForPayment: commission in a pending state 
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+        
+        {
+            "amountReadyForPayment": [
+                {
+                    "amount": 500.00,
+                    "currencyCode": "EUR",
+                    "limit": 50.00,
+                    "countryCode": "FR",
+                    "reasonKey": "BLOCK_REASON_EMPTY_BANK_DETAIL"          
+                },
+                {
+                    "amount": 20.00,
+                    "currencyCode": "GBP",
+                    "limit": 30.00,
+                    "countryCode": "GB",
+                    "reasonKey": "LIMIT_NOT_REACHED"
+                }
+            ],
+        "amountNotReadyForPayment": {
+                "amount": 446391.92,
+                "currencyCode": "GBP"
+            }
+        }
+
+### Earnings [GET /publisher/report/payments/earnings]
+Overall earnings for a publisher broken down by pending approval and the amount to be paid and on which date.
+- amountToBePaid: the amount that a publisher will be paid on the next payment date.
+- pendingEarnings: the amount that has been approved but not yet ready for payment (i.e. an advertiser hasn't yet paid the invoice).
+- balance:  the total amount of commission a publisher has earned that has yet to be paid (including amountToBePaid, pendingEarnings and any non-approved leads or sales).
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+
++ Response 200 (application/json)
+
+        {
+            "amountToBePaid": 5000.00,
+            "pendingEarnings": 25000.00,
+            "balance": 50000.00,
+            "currencyCode": "EUR",
+            "nextPaymentDate": 2019-01-14
+        }
+
+### Digital Wallets [GET /publisher/report/payments/digitalwallets]
+Digital wallets are manual payments that are assigned to a publisher. These can relate to bonuses, tenancy placements or commission corrections.
+
++ Parameters
+    + programId: 123456 (integer, optional) - Filter by programId
+    + sourceId: 1234567 (integer, optional) - Filter by sourceId
+    + fromDate: `20190101` (date, optional) - Filter by date the digital wallet was created
+    + toDate: `20190201` (date, optional) - Filter by date the digital wallet was created 
+    + reportCurrencyCode: EUR (string, optional) - The ISO 4217 code of currency
+    
+    
+    + status: `OPEN` (enum(string), optional) - Status of the digital wallet - has it been invoiced to an advertiser and has it been paid.
+        + Members
+                + `OPEN`
+                + `INVOICED`
+                + `PAID`
+    + sortBy: clicks (string, optional) - The field used to sort the results
+    + sortOrder: asc (string, optional) - The order the sort field is sorted by (asc or desc)
+    + offset: 0 (integer, optional) - Offset to get results from
+    + limit: 20 (integer, optional) - Number of records to be retrieved
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [BearerToken]
+ 
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + programId: 123456 (number) - The ID for the program where the transaction took place
+        + programName: `Program 1` (string) - The name of the program where the transaction took place
+        + sourceName: `Source 1` (string) - The name of the source that was attributed the transaction
+        + sourceId: 1234567 (number) - The ID of the source that was attributed the transactio        
+        + createdDate: `2019-01-01 09:38:28.0` (string) - When the digital wallet was created in our database.        
+        + text: `Tenancy Placement Jan 2019` (string) - Text to explain what the digital wallet relates to
+        + digitalWalletType: `DEPOSIT` (string) - Whether the digital wallet is a deposit (positive amount to the publisher) or withdraw (correction to the publisher)
+        + amount (object) - Amount Object contains the amount in the publishers reporting currency and the program currency
+            + publisherCurrency: `SEK` (string) - Publisher reporting currency. ISO 4217 code
+            + publisherValue: 1000.00 (number) - Digital wallet amount in publisher currency
+            + programCurrency: `EUR` (string) - Program currency. ISO 4217 code
+            + programValue: 100.00 (number) - Digital wallet amount in program currency 
+        
+    + Body
+            {
+                "offset": 0,
+                "limit": 20,
+                "total": 2,
+                "items": [
+                    {
+                        "programId": 123456,
+                        "programName": "A Progra",
+                        "sourceId": 1234567,
+                        "sourceName": "A Source",
+                        "createdDate": "2019-01-13T09:00:00.000+0100",
+                        "text": "Tenancy Placement Jan 2019",
+                        "digitalWalletType": "DEPOSIT",
+                        "amount": {
+                            "publisherCurrency": "SEK",
+                            "publisherValue": 15000.00,
+                            "programCurrency": "EUR",
+                            "programValue": 1500.00
+                        },
+                        "digitalWalletStatus": "PAID"
+                    },
+                    {
+                        "programId": 654321
+                        "programName": "Another Program",
+                        "sourceId": 7654321,
+                        "sourceName": "Another Source",
+                        "createdDate": "2019-02-01T10:00:00.000+0100",
+                        "text": "Bonus payment Jan 2019",
+                        "digitalWalletType": "DEPOSIT",
+                        "amount": {
+                            "publisherCurrency": "SEK",
+                            "publisherValue": 20000.00,
+                            "programCurrency": "EUR",
+                            "programValue": 2000.00
+                        },
+                        "digitalWalletStatus": "OPEN"
+                    }
+                ]
+            }
