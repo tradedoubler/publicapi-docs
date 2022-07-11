@@ -8,6 +8,50 @@ At Tradedoubler we expose all features available in our web UI through the API. 
 
 Changelog
 =========
+2022-06-01
+----------
+Endpoints changed in this release:
++ GET /statistics
++ GET /statistics/export
++ GET /transactions
++ GET /transactions/export
++ GET /transactions/payments
++ GET /transactions/export/payments
+
+### Statistics
+Add commission for Impression, Unique Visitors and Clicks metrics.
+
+### Statistics export
+Add commission for Impression, Unique Visitors and Clicks metrics.
+
+### Transactions
+Included reasonId and reasonName, this gives transparency on why transactions were denied
+
+### Transactions export
+Included reasonId and reasonName, this gives transparency on why transactions were denied
+
+### Transactions by Payment Id
+Included reasonId and reasonName, this gives transparency on why transactions were denied
+
+### Transactions by Payment Id export
+Included reasonId and reasonName, this gives transparency on why transactions were denied
+
+2022-04-28
+----------
+Endpoints changed in this release:
++ GET /statistics
++ GET /statistics/export
++ GET /payment/pendingEarningsBreakdown
+
+### Statistics
+Removed 92 day limit for intervalType=period and intervalType=day (except when reportType=epi)
+
+### Statistics export
+Removed 92 day limit for intervalType=period and intervalType=day (except when reportType=epi)
+
+### Pending Earnings Breakdown endpoint
+Added report currency to amountReadyForPayment object
+
 2021-07-30
 ----------
 Endpoints changed in this release:
@@ -182,7 +226,7 @@ GET|/programs/detail|&#10004;|&#10004;|&#10004;|&#10004;
 POST|/programs/apply|&#10004;|&#10004;|&#10004;|
 GET|/tokens|&#10004;|&#10004;|&#10004;|
 POST|/tokens|&#10004;|&#10004;||
-GET|/payment/settings|&#10004;|||
+GET|/payment/settings|&#10004;|&#10004;||
 PUT|/payment/settings|&#10004;|||
 GET|/payment/providers|&#10004;|||
 GET|/payment/settings/fields/tradedoubler|&#10004;|||
@@ -206,7 +250,7 @@ GET|/payments/{paymentId}|&#10004;|&#10004;||
 GET|/payments/earnings|&#10004;|&#10004;|&#10004;|&#10004;
 GET|/payments/accountBalanceBreakdown|&#10004;|&#10004;|&#10004;|&#10004;
 GET|/payments/pendingEarningsBreakdown|&#10004;|&#10004;|&#10004;|&#10004;
-
+GET|/payments/digitalWallets|&#10004;|&#10004;|&#10004;|&#10004;
 
 # Group oAuth 2.0
 
@@ -1923,8 +1967,11 @@ Detailed statistics for publisher, they can be grouped by date, source, program,
             "reportCurrencyCode": "GBP",
             "items": [{
                     "impressions": 0,
+                    "impsCommission": 0.00,
                     "clicks": 1,
+                    "clicks": 0.50,
                     "uniqueVisitors": 1,
+                    "uvCommission": 0.00,
                     "leads": 0,
                     "leadsCommission": 0.00,
                     "iLeads": 0,
@@ -1946,9 +1993,12 @@ Detailed statistics for publisher, they can be grouped by date, source, program,
                     "deposit": 0.00,
                     "withdraw": 0.00
                 }, {
-                    "impressions": 0,
+                 "impressions": 0,
+                    "impsCommission": 0.00,
                     "clicks": 8,
+                    "clicks": 4.00,
                     "uniqueVisitors": 4,
+                    "uvCommission": 0.00,
                     "leads": 0,
                     "leadsCommission": 0.00,
                     "iLeads": 0,
@@ -2016,8 +2066,11 @@ Export summary statistics into another reporting format - for analysis in tools 
             "reportCurrencyCode": "GBP",
             "items": [{
                     "impressions": 0,
+                    "impsCommission": 0.00,
                     "clicks": 1,
+                    "clicks": 0.50,
                     "uniqueVisitors": 1,
+                    "uvCommission": 0.00,
                     "leads": 0,
                     "leadsCommission": 0.00,
                     "iLeads": 0,
@@ -2039,9 +2092,12 @@ Export summary statistics into another reporting format - for analysis in tools 
                     "deposit": 0.00,
                     "withdraw": 0.00
                 }, {
-                    "impressions": 0,
+                 "impressions": 0,
+                    "impsCommission": 0.00,
                     "clicks": 8,
+                    "clicks": 4.00,
                     "uniqueVisitors": 4,
+                    "uvCommission": 0.00,
                     "leads": 0,
                     "leadsCommission": 0.00,
                     "iLeads": 0,
@@ -2175,7 +2231,9 @@ List of transactions for a given source
                         "operatingSystem": null,
                         "browser": null
                     },
-                    "paymentId": 1234567
+                    "paymentId": 1234567,
+                    "reasonId": 1,
+                    "reasonName": "Accepted manually"
                 }]
             }
 
@@ -2286,7 +2344,9 @@ Export list of transactions for a given source
                         "operatingSystem": null,
                         "browser": null
                     },
-                    "paymentId": 1234567
+                    "paymentId": 1234567,
+                    "reasonId": 1,
+                    "reasonName": "Accepted manually"
                 }]
             }
 
@@ -2393,7 +2453,9 @@ List of transactions for a given Payment Id
                         "operatingSystem": null,
                         "browser": null
                     },
-                    "paymentId": 1234567
+                    "paymentId": 1234567,
+                    "reasonId": 1,
+                    "reasonName": "Accepted manually"
                 }]
             }
 
@@ -2504,7 +2566,9 @@ Export list of transactions for a given payment Id
                         "operatingSystem": null,
                         "browser": null
                     },
-                    "paymentId": 1234567
+                    "paymentId": 1234567,
+                    "reasonId": 1,
+                    "reasonName": "Accepted manually"                    
                 }]
             }
 
@@ -2891,6 +2955,9 @@ Breakdown of commission not approved for payment. This is split into two objects
                     "amount": 500.00,
                     "currencyCode": "EUR",
                     "limit": 50.00,
+                    "publisherCurrencyCode": "SEK",
+                    "publisherCurrencyCode": 5000,
+                    "publisherCurrencylimit": 500.00,
                     "countryCode": "FR",
                     "reasonKey": "BLOCK_REASON_EMPTY_BANK_DETAIL"          
                 },
@@ -2898,6 +2965,9 @@ Breakdown of commission not approved for payment. This is split into two objects
                     "amount": 20.00,
                     "currencyCode": "GBP",
                     "limit": 30.00,
+                    "publisherCurrencyCode": "SEK",
+                    "publisherCurrencyCode": 240,
+                    "publisherCurrencylimit": 660.00,
                     "countryCode": "GB",
                     "reasonKey": "LIMIT_NOT_REACHED"
                 }
@@ -2981,7 +3051,7 @@ Digital wallets are manual payments that are assigned to a publisher. These can 
                 "items": [
                     {
                         "programId": 123456,
-                        "programName": "A Progra",
+                        "programName": "A Program",
                         "sourceId": 1234567,
                         "sourceName": "A Source",
                         "createdDate": "2019-01-13T09:00:00.000+0100",
